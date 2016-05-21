@@ -18,7 +18,12 @@ class observer {
 
 public:
 
-	virtual void slot(T i) {};
+	virtual void slot(T i) 
+	{
+		#ifdef DEBUG
+		std::cout << "received signal in thread " << boost::this_thread::get_id() << std::endl;
+		#endif
+	};
 	virtual ~observer() {};
 
 };
