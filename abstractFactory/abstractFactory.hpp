@@ -17,10 +17,10 @@ protected:
 public:
 	static boost::shared_ptr<C> createInstance(const K & key)
 	{
-		map_type::iterator it = getMap()->find(key);
+		typename map_type::iterator it = getMap()->find(key);
 		
 		if (it == getMap()->end())
-			throw std::exception("unknown key found !");
+			throw std::runtime_error("unknown key found !");
 		else
 			return boost::shared_ptr<C>(it->second());
 	}
