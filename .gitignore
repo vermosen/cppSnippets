@@ -29,3 +29,5 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 *.openDB
 *.db
+*VC.db
+*VC.openDB

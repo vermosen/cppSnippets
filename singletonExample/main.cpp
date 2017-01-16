@@ -5,12 +5,15 @@
 class myImpl
 {
 public:
-	void mySubMethod() { std::cout << "hello world !" << std::endl; }
+	static void mySubMethod() { std::cout << "hello world too !" << std::endl; }
 };
 
 int main() 
 {
 	myExample<myImpl> test;
 	test.myMethod();
+	test.myFriendMethod();
+
+	__debugbreak();
 	return 0;
 }
