@@ -6,7 +6,7 @@
 
 #include "abstractFactory.hpp"
 
-class base 
+class base
 {
 public:
 	virtual void foo() = 0;

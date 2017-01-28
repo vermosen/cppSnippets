@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -11,8 +12,23 @@ int main() {
 
 	try
 	{
-		boost::shared_ptr<base> myBase = factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "A"));
-		myBase->foo();
+		std::vector<boost::shared_ptr<base> > vec;
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "A")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "B")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "C")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "A")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "C")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "E")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "D")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "B")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "B")));
+		vec.push_back(factory<base, std::tuple<int, std::string> >::createInstance(std::make_tuple(1, "C")));
+
+		for (auto it = vec.cbegin(); it != vec.cend(); it++)
+		{
+			it->get()->foo();
+		}
+		
 	}
 	catch (const std::exception&)
 	{
