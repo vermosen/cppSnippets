@@ -6,14 +6,14 @@
     case elem : return BOOST_PP_STRINGIZE(elem);
 
 #define DEFINE_TEMPLATE_ENUM(r, type, elem)									\
-    template<> const char enumName<type::elem>[] = BOOST_PP_STRINGIZE(elem);
+    template<> const char name<type::elem>[] = BOOST_PP_STRINGIZE(elem);
 
 #define DEFINE_ENUM_WITH_STRING_CONVERSIONS(type, enumerators)				\
-enum type																	\
+enum type : uint32_t														\
 {																			\
     BOOST_PP_SEQ_ENUM(enumerators)											\
 };																			\
-inline const char * toString(type v)										\
+inline const char * toChar(type v)											\
 {																			\
 	switch (v)																\
 	{																		\
@@ -30,11 +30,10 @@ BOOST_PP_SEQ_FOR_EACH(														\
 	DEFINE_TEMPLATE_ENUM,													\
 	type,																	\
 	enumerators)															\
-template<type>																\
 inline std::ostream & operator << (std::ostream & s, type n)				\
 {																			\
-	s << toString(n);														\
-	return s;																\
+	s << toChar(n);															\
+    return s;																\
 }
 
 DEFINE_ENUM_WITH_STRING_CONVERSIONS(myEnum, (AAA)(BBB)(CCC)(DDD))
@@ -47,13 +46,11 @@ int main()
 	// Prints "Invalid MyEnum value"
 	std::cout << name<static_cast<myEnum>(0x12345678)> << '\n';
 
-	myEnum t = myEnum::AAA;
+	// Prints "BBB"
+	std::cout << myEnum::BBB << std::endl;
 
-	// Prints "AAA"
-	std::cout << toString(myEnum::AAA) << std::endl;
-
-	// Prints "AAA"
-	std::cout << myEnum::AAA << std::endl;
+	// do not compile
+	//std::cout << myEnum::EEE << std::endl;
 
 	return 0;
 }
