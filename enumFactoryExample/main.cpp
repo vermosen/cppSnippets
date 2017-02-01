@@ -26,6 +26,7 @@ inline const char * toString(name v)										\
 }
 
 DEFINE_ENUM_WITH_STRING_CONVERSIONS(OS_type, (Linux)(Apple)(Windows))
+DEFINE_ENUM_WITH_STRING_CONVERSIONS(OS_type2, (Linux2)(Apple2)(Windows2))
 
 int main()
 {
