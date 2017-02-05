@@ -13,15 +13,19 @@
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/optional.hpp>
 #include <boost/none.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <boost/phoenix/bind.hpp>
 
 using namespace boost::spirit;
 
-//typedef boost::optional<boost::gregorian::date> date;
-//typedef boost::optional<std::tuple<int, int, int> > dateAdaptator;
-
+#define OPT
+#ifdef OPT
+typedef boost::optional<boost::gregorian::date> date;
+typedef boost::optional<std::tuple<int, int, int> > dateAdaptator;
+#else
 typedef boost::gregorian::date date;
 typedef std::tuple<int, int, int> dateAdaptator;
+#endif
 
 struct record
 {
@@ -44,8 +48,11 @@ struct traits::transform_attribute<date, dateAdaptator, qi::domain>
 
 	static void post(date& d, type const& v)
 	{
-		//(v ? d = date(std::get<0>(*v), std::get<1>(*v), std::get<2>(*v)) : d = boost::none);
-		d = date(std::get<0>(v), std::get<1>(v), std::get<2>(v));
+		#ifdef OPT
+		(v ? d = boost::gregorian::date(std::get<0>(*v), std::get<1>(*v), std::get<2>(*v)) : d = boost::none);
+		#else
+		d = date(std::get<0>(v), std::get<1>(v), std::get<2>(v));	
+		#endif
 	}
 
 	static void fail(date&) {}
@@ -59,8 +66,12 @@ struct record_parser : qi::grammar<Iterator, record(), ascii::space_type>
 	{
 		quoted_int %= qi::lexeme['"' >> int_ >> '"'];
 
+		#ifdef OPT
+		quoteddate %= ascii::no_case["\"\""] | qi::lexeme['"' >> qi::int_ >> "-" >> qi::int_ >> "-" >> qi::int_ >> '"'];
+		#else
 		quoteddate %= qi::lexeme['"' >> qi::int_ >> "-" >> qi::int_ >> "-" >> qi::int_ >> '"'];
-
+		#endif
+		
 		start %=
 			quoted_int >> ',' >>
 			quoteddate
@@ -72,8 +83,11 @@ struct record_parser : qi::grammar<Iterator, record(), ascii::space_type>
 	qi::rule<Iterator, record(), ascii::space_type> start;
 };
 
+#ifdef OPT
+static const std::string rec("\"123456\",\"\"");
+#else
 static const std::string rec("\"123456\",\"2016-10-12\"");
-//static const std::string rec("\"123456\",\"\"");
+#endif
 
 int main()
 {
@@ -89,7 +103,15 @@ int main()
 	{
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << result.elem1 << "," << result.elem2 << std::endl;
+		std::cout << "got: " << result.elem1 << ",";
+		#ifdef OPT
+		if (!result.elem2) 
+			{ std::cout << "(none)" << std::endl; } 
+		else 
+			{ std::cout << result.elem2 << std::endl; }
+		#else
+		std::cout << result.elem2 << std::endl;
+		#endif
 		std::cout << "\n-------------------------\n";
 	}
 	else
