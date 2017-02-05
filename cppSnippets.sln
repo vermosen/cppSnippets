@@ -35,6 +35,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample2", "spiritExa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample3", "spiritExample3\spiritExample3.vcxproj", "{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample4", "spiritExample4\spiritExample4.vcxproj", "{01748776-AEA8-4549-8C89-13C34154C884}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -171,6 +173,14 @@ Global
 		{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}.Release|x64.Build.0 = Release|x64
 		{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}.Release|x86.ActiveCfg = Release|Win32
 		{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}.Release|x86.Build.0 = Release|Win32
+		{01748776-AEA8-4549-8C89-13C34154C884}.Debug|x64.ActiveCfg = Debug|x64
+		{01748776-AEA8-4549-8C89-13C34154C884}.Debug|x64.Build.0 = Debug|x64
+		{01748776-AEA8-4549-8C89-13C34154C884}.Debug|x86.ActiveCfg = Debug|Win32
+		{01748776-AEA8-4549-8C89-13C34154C884}.Debug|x86.Build.0 = Debug|Win32
+		{01748776-AEA8-4549-8C89-13C34154C884}.Release|x64.ActiveCfg = Release|x64
+		{01748776-AEA8-4549-8C89-13C34154C884}.Release|x64.Build.0 = Release|x64
+		{01748776-AEA8-4549-8C89-13C34154C884}.Release|x86.ActiveCfg = Release|Win32
+		{01748776-AEA8-4549-8C89-13C34154C884}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
