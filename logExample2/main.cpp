@@ -10,3 +10,4 @@ int main()
 	LOG(foo::sev_error) << "this is a test";
 	return 0;
 }
+
