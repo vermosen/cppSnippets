@@ -20,7 +20,7 @@ using namespace boost::spirit;
 
 int main()
 {
-	std::string num = "12,313.12346";
+	std::string num = "1.235";
 	std::string::const_iterator first = num.cbegin();
 	std::string::const_iterator last = num.cend();
 
@@ -33,18 +33,20 @@ int main()
 	if (parse(first, last, uint3, result))
 	{
 		double n = 0;
-		while (*first != '.' && qi::parse(first, last, ',') && qi::parse(first, last, uint3_3, n))
+		while (qi::parse(first, last, ",") && qi::parse(first, last, uint3_3, n))
 		{
 			result = result * 1000 + n;
+			
 		}
 
-		qi::parse(first, last, '.');
-
-		int i = 10;
-		while (qi::parse(first, last, uint1_1, n))
+		if (qi::parse(first, last, "."))
 		{
-			result = result + n / i;
-			i *= 10;
+			int i = 10;
+			while (qi::parse(first, last, uint1_1, n))
+			{
+				result = result + n / i;
+				i *= 10;
+			}
 		}
 
 		std::cout << std::fixed << std::setprecision(6) << result << std::endl;
