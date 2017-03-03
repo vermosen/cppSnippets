@@ -61,12 +61,15 @@ namespace test
 			Iter & first_iter, Iter last_iter,
 			Iter error_iter, const qi::info& what) const
 		{
+			// retrieve the beginning of the record
+			auto temp = first_iter;
+
 			if (first_iter != last_iter)
 			{
 				while (*(first_iter++) != '\n');
 
 				// log the error
-				std::cout << "wrong string: " << std::string(error_iter, first_iter) << std::endl;
+				std::cout << "wrong record: " << std::string(temp, first_iter) << std::endl;
 			}
 		}
 	};
@@ -121,7 +124,7 @@ namespace test
 	//]
 }
 
-static const std::string emps("record{36, \"jim\", \"smith\", 15000}\nrecord{36 \"bob\", \"smith\", 10000}\nrecord{36, \"rob\", \"smith\", 10000}\n");
+static const std::string emps("record{36 \"jim\", \"smith\", 15000}\nrecord{36, \"bob\", \"smith\", 10000}\nrecord{36 \"rob\", \"smith\", 10000}\n");
 boost::chrono::high_resolution_clock::time_point start;
 
 ////////////////////////////////////////////////////////////////////////////
