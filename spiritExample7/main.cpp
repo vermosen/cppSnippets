@@ -1,4 +1,5 @@
 #include <boost/config/warning_disable.hpp>
+#include <boost/spirit/include/qi_skip.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -11,6 +12,8 @@
 #include <iostream>
 #include <string>
 #include <complex>
+
+#define BOOST_SPIRIT_DEBUG
 
 namespace test
 {
@@ -47,7 +50,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 namespace test
 {
-	// our error handler
+	// our recovery handler
 	template <typename = void> struct errorHandler
 	{
 		errorHandler() = default;
@@ -55,26 +58,16 @@ namespace test
 
 		template<typename...> struct result { typedef void type; };
 		template<typename Iter> void operator()(
-			const std::string & mess, Iter first_iter, Iter last_iter,
+			Iter & first_iter, Iter last_iter,
 			Iter error_iter, const qi::info& what) const
 		{
-			std::cout << "An error occurred !: " << mess << std::endl;
-		}
-	};
+			if (first_iter != last_iter)
+			{
+				while (*(first_iter++) != '\n');
 
-	// our recovery handler
-	template <typename = void> struct recoveryHandler
-	{
-		recoveryHandler() = default;
-		recoveryHandler(recoveryHandler const&) = delete;
-
-		template<typename...> struct result { typedef void type; };
-		template<typename Iter> void operator()(
-			Iter first_iter, Iter last_iter,
-			Iter error_iter, const qi::info& what) const
-		{
-			// recovery logic here
-			std::cout << "some recovery happends..." << std::endl;
+				// log the error
+				std::cout << "wrong string: " << std::string(error_iter, first_iter) << std::endl;
+			}
 		}
 	};
 
@@ -89,54 +82,46 @@ namespace test
 			using qi::lexeme;
 			using ascii::char_;
 
-			quoted_string %= lexeme['"' >> +(char_ - '"') >> '"'];
+			rQuotedString %= lexeme['"' >> +(char_ - '"') >> '"'];
 
-			rRecord %= qi::eps > // ADD EPS, OTHERWISE ERROR HANDLING IS NOT TRIGGERED
-				lit("record")
-				>> '{'
-				>> int_ >> ','
-				>> quoted_string >> ','
-				>> quoted_string >> ','
-				>> double_
-				>> '}'
+			rRecord %= qi::eps
+				>> lit("record")
+				> '{'
+				> int_ > ','
+				> rQuotedString > ','
+				> rQuotedString > ','
+				> double_
+				> '}' 
+				> qi::eol
 				;
 
-			rRecords = qi::eps > rRecord >> qi::eol >> rRecord >> qi::eoi;
+			rRecords = +(rRecord) >> qi::eoi;
 
+			BOOST_SPIRIT_DEBUG_NODES((rRecord))
+			BOOST_SPIRIT_DEBUG_NODES((rRecords))
 
-			qi::on_error<qi::fail>
+			// TODO: pass reference for recovery
+			qi::on_error<qi::retry>
 			(
 				// single record error we log the error
 				rRecord, boost::phoenix::bind(boost::phoenix::ref(errorHandler_),
-					std::string("error"),
-					boost::spirit::_1,
-					boost::spirit::_2, // it start
-					boost::spirit::_3, // it end
-					boost::spirit::_4) // what failed
+					boost::spirit::qi::_1,
+					boost::spirit::qi::_2, // it start
+					boost::spirit::qi::_3, // it end
+					boost::spirit::qi::_4) // what failed
 			);
-
-			qi::on_error<qi::retry>
-			(
-				rRecords, boost::phoenix::bind(boost::phoenix::ref(recoveryHandler_),
-					boost::spirit::_1,
-					boost::spirit::_2, // it start
-					boost::spirit::_3, // it end
-					boost::spirit::_4)
-			);
-
 		}
 
-		qi::rule<Iterator, std::string(), ascii::blank_type> quoted_string;
+		qi::rule<Iterator, std::string(), ascii::blank_type> rQuotedString;
 		qi::rule<Iterator, record(), ascii::blank_type> rRecord;
 		qi::rule<Iterator, std::vector<record>(), ascii::blank_type> rRecords;
 
 		errorHandler<> errorHandler_;
-		recoveryHandler<> recoveryHandler_;
 	};
 	//]
 }
 
-static const std::string emps("record{36, \"bob\", \"smith\", 10000}\nrecord{37, \"rob\", \"pond\", 20000}");
+static const std::string emps("record{36, \"jim\", \"smith\", 15000}\nrecord{36 \"bob\", \"smith\", 10000}\nrecord{36, \"rob\", \"smith\", 10000}\n");
 boost::chrono::high_resolution_clock::time_point start;
 
 ////////////////////////////////////////////////////////////////////////////
@@ -169,8 +154,10 @@ int main()
 
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << boost::fusion::as_vector(recs[0]) << std::endl;
-		std::cout << "got: " << boost::fusion::as_vector(recs[1]) << std::endl;
+
+		for (auto it = recs.begin(); it != recs.end(); it++)
+			std::cout << "got: " << boost::fusion::as_vector(*it) << std::endl;
+
 		std::cout << "\n-------------------------\n";
 	}
 	else
