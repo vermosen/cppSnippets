@@ -58,7 +58,7 @@ struct parser : qi::grammar<Iterator, std::vector<date>(), ascii::blank_type>
 			qi::int_[_pass = (_1 > 0 && _1 <= 12)] > '-' >
 			qi::int_[_pass = (_1 > 0 && _1 <= 31)] > ')' >> qi::eol;
 
-		rDates %= +(rDate/* >> qi::eol*/) >> qi::eoi;
+		rDates %= +(rDate) >> qi::eoi;
 
 		qi::on_error<qi::retry>
 		(	
