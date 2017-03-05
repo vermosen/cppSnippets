@@ -19,11 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{79BB0C6F-A8A7-47DB-8ED9-040EEE14869E}</ProjectGuid>
+    <ProjectGuid>{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>spiritExample5</RootNamespace>
+    <RootNamespace>spiritExample11</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>spiritExample05</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

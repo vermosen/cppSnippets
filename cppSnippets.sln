@@ -25,31 +25,33 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enumFactoryExample", "enumF
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enumFactoryExample2", "enumFactoryExample2\enumFactoryExample2.vcxproj", "{437B6E74-2DCA-4547-8F03-153640B3DEA9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample", "spiritExample\spiritExample.vcxproj", "{FB6027C4-70E1-4A70-998F-EF8C875A790C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample01", "spiritExample\spiritExample.vcxproj", "{FB6027C4-70E1-4A70-998F-EF8C875A790C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logExample", "logExample\logExample.vcxproj", "{1CAA5F45-B499-4AF6-9754-2875F2CCA6E4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logExample2", "logExample2\logExample2.vcxproj", "{55CFEC79-11EA-44CB-9AAB-56D1E8083A72}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample2", "spiritExample2\spiritExample2.vcxproj", "{331D0CA0-C3EB-47B1-BC29-78E0241D0DC2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample02", "spiritExample2\spiritExample2.vcxproj", "{331D0CA0-C3EB-47B1-BC29-78E0241D0DC2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample3", "spiritExample3\spiritExample3.vcxproj", "{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample03", "spiritExample3\spiritExample3.vcxproj", "{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample4", "spiritExample4\spiritExample4.vcxproj", "{01748776-AEA8-4549-8C89-13C34154C884}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample04", "spiritExample4\spiritExample4.vcxproj", "{01748776-AEA8-4549-8C89-13C34154C884}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample5", "spiritExample5\spiritExample5.vcxproj", "{79BB0C6F-A8A7-47DB-8ED9-040EEE14869E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample05", "spiritExample5\spiritExample5.vcxproj", "{79BB0C6F-A8A7-47DB-8ED9-040EEE14869E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample6", "spiritExample6\spiritExample6.vcxproj", "{ACD003E6-6AFE-42EF-AB98-286628338C29}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample06", "spiritExample6\spiritExample6.vcxproj", "{ACD003E6-6AFE-42EF-AB98-286628338C29}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample7", "spiritExample7\spiritExample7.vcxproj", "{ABF4CF97-7F3E-4727-841D-58BBB945FB8F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample07", "spiritExample7\spiritExample7.vcxproj", "{ABF4CF97-7F3E-4727-841D-58BBB945FB8F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample8", "spiritExample8\spiritExample8.vcxproj", "{D80F9643-2F15-4DBD-BD26-AD249883A453}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample08", "spiritExample8\spiritExample8.vcxproj", "{D80F9643-2F15-4DBD-BD26-AD249883A453}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample9", "spiritExample9\spiritExample9.vcxproj", "{62272BE5-A424-4209-A5B1-78B80DB25F21}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample09", "spiritExample9\spiritExample9.vcxproj", "{62272BE5-A424-4209-A5B1-78B80DB25F21}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "spirit", "spirit", "{63333CE2-C904-4890-AB6C-1737FB53AED9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample10", "spiritExample10\spiritExample10.vcxproj", "{6962AA67-541E-4864-B45E-E703724B393E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample11", "spiritExample11\spiritExample11.vcxproj", "{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -243,6 +245,14 @@ Global
 		{6962AA67-541E-4864-B45E-E703724B393E}.Release|x64.Build.0 = Release|x64
 		{6962AA67-541E-4864-B45E-E703724B393E}.Release|x86.ActiveCfg = Release|Win32
 		{6962AA67-541E-4864-B45E-E703724B393E}.Release|x86.Build.0 = Release|Win32
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Debug|x64.ActiveCfg = Debug|x64
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Debug|x64.Build.0 = Debug|x64
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Debug|x86.ActiveCfg = Debug|Win32
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Debug|x86.Build.0 = Debug|Win32
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Release|x64.ActiveCfg = Release|x64
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Release|x64.Build.0 = Release|x64
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Release|x86.ActiveCfg = Release|Win32
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -258,5 +268,6 @@ Global
 		{D80F9643-2F15-4DBD-BD26-AD249883A453} = {63333CE2-C904-4890-AB6C-1737FB53AED9}
 		{62272BE5-A424-4209-A5B1-78B80DB25F21} = {63333CE2-C904-4890-AB6C-1737FB53AED9}
 		{6962AA67-541E-4864-B45E-E703724B393E} = {63333CE2-C904-4890-AB6C-1737FB53AED9}
+		{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C} = {63333CE2-C904-4890-AB6C-1737FB53AED9}
 	EndGlobalSection
 EndGlobal
