@@ -5,7 +5,7 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/io.hpp>
-#include <boost/chrono.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 #include <string>
@@ -16,13 +16,21 @@ namespace ascii = boost::spirit::ascii;
 
 struct record
 {
-	std::string val;
+	int val;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
 	record,
-	(std::string, val)
+	(int, val)
 )
+
+template <>
+struct boost::spirit::traits::transform_attribute<std::string, int>
+{
+	typedef int& type;
+	static int& pre(int_data& d) { return d.i; }
+	static void post(int_data& val, int const& attr) {}
+};
 
 template <typename Iterator>
 struct record_parser : qi::grammar<Iterator, record(), ascii::space_type>
@@ -31,17 +39,32 @@ struct record_parser : qi::grammar<Iterator, record(), ascii::space_type>
 	{
 		using ascii::char_;
 
-		quoted_string %= qi::lexeme['<' >> +(char_ - '>') >> '>'];
+		rBase %= qi::lexeme[+(char_ - '>')];
+		rInt %= qi::attr_cast(rBase);
+
+		//rStartTag %=
+		//	'<'
+		//	>> !lit('/')
+		//		>   lexeme[+(char_ - '>')]
+		//		>   '>'
+		//	;
+
+		//rEndTag =
+		//	"</"
+		//		>   string(_r1)
+		//		>   '>'
+		//	;
 
 		start %=
-			quoted_string;
+			rInt;
 	}
 
-	qi::rule<Iterator, std::string(), ascii::space_type> quoted_string;
+	qi::rule<Iterator, std::string(), ascii::space_type> rBase;
+	qi::rule<Iterator, int(), ascii::space_type> rInt;
 	qi::rule<Iterator, record(), ascii::space_type> start;
 };
 
-static const std::string rec("<hello World !>");
+static const std::string rec("182");
 
 int main()
 {
@@ -59,7 +82,7 @@ int main()
 	{
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << emp.val << std::endl;
+		std::cout << "got: " << boost::lexical_cast<std::string>(emp.val) << std::endl;
 		std::cout << "\n-------------------------\n";
 	}
 	else
