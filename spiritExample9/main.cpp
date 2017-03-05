@@ -2,9 +2,10 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/fusion/include/io.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
@@ -13,76 +14,80 @@
 
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
+namespace phx = boost::phoenix;
 
-struct record
+struct node
 {
-	int val;
+	std::string name;
+	std::string val;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
-	record,
-	(int, val)
+	node,
+	(std::string, name)
+	(std::string, val)
 )
 
-template <>
-struct boost::spirit::traits::transform_attribute<std::string, int>
-{
-	typedef int& type;
-	static int& pre(int_data& d) { return d.i; }
-	static void post(int_data& val, int const& attr) {}
-};
-
-template <typename Iterator>
-struct record_parser : qi::grammar<Iterator, record(), ascii::space_type>
+template <typename iterator>
+struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 {
 	record_parser() : record_parser::base_type(start)
 	{
+		using qi::lit;
+		using qi::lexeme;
+		using qi::raw;
 		using ascii::char_;
+		using ascii::string;
+		using namespace qi::labels;
 
-		rBase %= qi::lexeme[+(char_ - '>')];
-		rInt %= qi::attr_cast(rBase);
+		using phx::at_c;
+		using phx::push_back;
 
-		//rStartTag %=
-		//	'<'
-		//	>> !lit('/')
-		//		>   lexeme[+(char_ - '>')]
-		//		>   '>'
-		//	;
+		text = lexeme[+(char_ - '<')[_val += _1]];
 
-		//rEndTag =
-		//	"</"
-		//		>   string(_r1)
-		//		>   '>'
-		//	;
+		start_tag =
+			'<'
+			>> !lit('/')
+			>> lexeme[+(char_ - '>')[_val += _1]]
+			>> '>'
+			;
 
-		start %=
-			rInt;
+		end_tag =
+			"</"
+			>> string(_r1)
+			>> '>'
+			;
+
+		start =
+			start_tag[at_c<0>(_val) = _1]
+			>> text[at_c<1>(_val) = _1]
+			>> end_tag(at_c<0>(_val))
+			;
 	}
 
-	qi::rule<Iterator, std::string(), ascii::space_type> rBase;
-	qi::rule<Iterator, int(), ascii::space_type> rInt;
-	qi::rule<Iterator, record(), ascii::space_type> start;
+	qi::rule<iterator, node(), ascii::space_type> start;
+	qi::rule<iterator, std::string(), ascii::space_type> text;
+	qi::rule<iterator, std::string(), ascii::space_type> start_tag;
+	qi::rule<iterator, void(std::string), ascii::space_type> end_tag;
 };
 
-static const std::string rec("182");
+static const std::string rec("<foo>hello world!</foo>");
 
 int main()
 {
-	using boost::spirit::ascii::space;
 	typedef std::string::const_iterator iterator_type;
 	typedef record_parser<iterator_type> record_parser;
 
 	record_parser g; // Our grammar
 
-	record emp;
-	std::string::const_iterator iter = rec.begin();
-	std::string::const_iterator end = rec.end();
+	node emp;
+	iterator_type iter = rec.begin(), end = rec.end();
 
-	if (phrase_parse(iter, end, g, space, emp) && iter == end)
+	if (phrase_parse(iter, end, g, ascii::space, emp) && iter == end)
 	{
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << boost::lexical_cast<std::string>(emp.val) << std::endl;
+		std::cout << "got: " << boost::lexical_cast<std::string>(emp.name) << ": " << boost::lexical_cast<std::string>(emp.val) << std::endl;
 		std::cout << "\n-------------------------\n";
 	}
 	else
