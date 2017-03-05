@@ -14,75 +14,52 @@
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 
-///////////////////////////////////////////////////////////////////////////
-//  Our employee struct
-///////////////////////////////////////////////////////////////////////////
 struct record
 {
-	std::string val1;
+	std::string val;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
 	record,
-	(std::string, val1)
+	(std::string, val)
 )
 
-template <typename iterator, typename skipper>
-struct parser : qi::grammar<iterator, record(), skipper>
+template <typename Iterator>
+struct record_parser : qi::grammar<Iterator, record(), ascii::space_type>
 {
-	parser() : parser::base_type(rFile)
+	record_parser() : record_parser::base_type(start)
 	{
-		rBase
-			%= qi::lexeme[+(qi::char_ - '<')];
+		using ascii::char_;
 
-		//rStart
-		//	%= '<' >> !qi::lit('/') > qi::lexeme[+(qi::char_ - '>')] > '>';
+		quoted_string %= qi::lexeme['<' >> +(char_ - '>') >> '>'];
 
-		//rEnd
-		//	%= "</" > ascii::string(qi::_r1) > '>';
-
-		//rString
-		//	%= rStart[qi::_a = qi::_1] > rBase > rEnd(qi::_a);
-
-		rStart
-			%= '<' >> +(qi::char_ - '>') > '>';
-
-		rEnd
-			%= "</" >> +(qi::char_) > '>';
-
-		rString
-			%= rStart >> qi::lexeme[rBase] >> rEnd;
-
-		rFile
-			%= rString >> qi::eoi;
+		start %=
+			quoted_string;
 	}
 
-	qi::rule<iterator, std::string(), skipper> rBase;
-	//qi::rule<iterator, std::string(), skipper> rStart;
-	//qi::rule<iterator, void(std::string), skipper> rEnd;
-	qi::rule<iterator, void(), skipper> rStart;
-	qi::rule<iterator, void(), skipper> rEnd;
-	qi::rule<iterator, std::string(), skipper> rString;
-	qi::rule<iterator, record(), skipper> rFile;
+	qi::rule<Iterator, std::string(), ascii::space_type> quoted_string;
+	qi::rule<Iterator, record(), ascii::space_type> start;
 };
 
-static const std::string rec("<test>hello World!</test>");
+static const std::string rec("<hello World !>");
 
 int main()
 {
+	using boost::spirit::ascii::space;
 	typedef std::string::const_iterator iterator_type;
+	typedef record_parser<iterator_type> record_parser;
 
-	parser<iterator_type, ascii::space_type> g; // Our grammar
+	record_parser g; // Our grammar
 
 	record emp;
 	std::string::const_iterator iter = rec.begin();
 	std::string::const_iterator end = rec.end();
 
-	if (phrase_parse(iter, end, g, ascii::space, emp) && iter == end)
+	if (phrase_parse(iter, end, g, space, emp) && iter == end)
 	{
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << emp.val1 << std::endl;
+		std::cout << "got: " << emp.val << std::endl;
 		std::cout << "\n-------------------------\n";
 	}
 	else
