@@ -6,6 +6,7 @@
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/spirit/include/qi_omit.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
@@ -18,14 +19,12 @@ namespace phx = boost::phoenix;
 
 struct node
 {
-	std::string name;
-	std::string val;
+	int val;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
 	node,
-	(std::string, name)
-	(std::string, val)
+	(int, val)
 )
 
 template <typename iterator>
@@ -44,34 +43,39 @@ struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 		using phx::push_back;
 
 		text = lexeme[+(char_ - '<')[_val += _1]];
+		rInt = lexeme[qi::int_];
 
-		start_tag %=
+		start_tag =
 			'<'
 			>> !lit('/')
-			>   lexeme[+(char_ - '>')]
-			>   '>'
+			>> lexeme[+(char_ - '>')]
+			>> '>'
 			;
 
 		end_tag =
 			"</"
-			>   string(_r1)
-			>   '>'
+			>> string(_r1)
+			>> '>'
 			;
 
-		start =
-			start_tag[at_c<0>(_val) = _1]
-			>> text[at_c<1>(_val) = _1]
-			>> end_tag(at_c<0>(_val))
+		rIntXml %=
+			start_tag[_a = _1]
+			>> rInt[at_c<1>(_val) = _1]
+			>> end_tag(_a)
 			;
+
+		start = rIntXml;
 	}
 
+	qi::rule<iterator, int(), qi::locals<std::string>, ascii::space_type> rIntXml;
 	qi::rule<iterator, node(), ascii::space_type> start;
 	qi::rule<iterator, std::string(), ascii::space_type> text;
+	qi::rule<iterator, int(), ascii::space_type> rInt;
 	qi::rule<iterator, std::string(), ascii::space_type> start_tag;
 	qi::rule<iterator, void(std::string), ascii::space_type> end_tag;
 };
 
-static const std::string rec("<foo>hello world!</fdsao>");
+static const std::string rec("<foo>123</foo>");
 
 int main()
 {

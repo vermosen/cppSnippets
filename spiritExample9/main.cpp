@@ -19,17 +19,15 @@ namespace phx = boost::phoenix;
 struct node
 {
 	std::string name;
-	std::string val;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
 	node,
 	(std::string, name)
-	(std::string, val)
 )
 
 template <typename iterator>
-struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
+struct record_parser : qi::grammar<iterator, node(), qi::locals<std::string>, ascii::space_type>
 {
 	record_parser() : record_parser::base_type(start)
 	{
@@ -48,7 +46,7 @@ struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 		start_tag =
 			'<'
 			>> !lit('/')
-			>> lexeme[+(char_ - '>')[_val += _1]]
+			>> lexeme[+(char_ - '>')]
 			>> '>'
 			;
 
@@ -58,14 +56,14 @@ struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 			>> '>'
 			;
 
-		start =
-			start_tag[at_c<0>(_val) = _1]
-			>> text[at_c<1>(_val) = _1]
-			>> end_tag(at_c<0>(_val))
+		start %=
+			start_tag[_a = _1]
+			>> text[at_c<0>(_val) = _1]
+			>> end_tag(_a)
 			;
 	}
 
-	qi::rule<iterator, node(), ascii::space_type> start;
+	qi::rule<iterator, node(), qi::locals<std::string>, ascii::space_type> start;
 	qi::rule<iterator, std::string(), ascii::space_type> text;
 	qi::rule<iterator, std::string(), ascii::space_type> start_tag;
 	qi::rule<iterator, void(std::string), ascii::space_type> end_tag;
@@ -87,7 +85,7 @@ int main()
 	{
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << boost::lexical_cast<std::string>(emp.name) << ": " << boost::lexical_cast<std::string>(emp.val) << std::endl;
+		std::cout << "got: " << boost::lexical_cast<std::string>(emp.name) << std::endl;
 		std::cout << "\n-------------------------\n";
 	}
 	else
