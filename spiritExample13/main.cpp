@@ -6,7 +6,6 @@
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/spirit/include/qi_omit.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
@@ -19,12 +18,16 @@ namespace phx = boost::phoenix;
 
 struct node
 {
-	int val;
+	std::string val1;
+	std::string val2;
+	int val3;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
 	node,
-	(int, val)
+	(std::string, val1)
+	(std::string, val2)
+	(int, val3)
 )
 
 template <typename iterator>
@@ -35,6 +38,7 @@ struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 		using qi::lit;
 		using qi::lexeme;
 		using qi::raw;
+		using qi::int_;
 		using ascii::char_;
 		using ascii::string;
 		using namespace qi::labels;
@@ -43,7 +47,8 @@ struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 		using phx::push_back;
 
 		text = lexeme[+(char_ - '<')[_val += _1]];
-		rInt = lexeme[qi::int_];
+
+		_int = lexeme[int_[_val = _1]];
 
 		start_tag =
 			'<'
@@ -58,24 +63,39 @@ struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 			>> '>'
 			;
 
-		rIntXml %=
+		rText =
 			start_tag[_a = _1]
-			>> rInt[at_c<1>(_val) = _1]
+			>> text[_val = _1]
 			>> end_tag(_a)
 			;
 
-		start = rIntXml;
+		rInt =
+			start_tag[_a = _1]
+			>> _int[_val = _1]
+			>> end_tag(_a)
+			;
+
+		start =
+			rText[at_c<0>(_val) = _1]
+			>> rText[at_c<1>(_val) = _1]
+			>> rInt[at_c<2>(_val) = _1];
 	}
 
-	qi::rule<iterator, int(), qi::locals<std::string>, ascii::space_type> rIntXml;
 	qi::rule<iterator, node(), ascii::space_type> start;
+	qi::rule<iterator, std::string(), qi::locals<std::string>, ascii::space_type> rText;
+	qi::rule<iterator, int(), qi::locals<std::string>, ascii::space_type> rInt;
 	qi::rule<iterator, std::string(), ascii::space_type> text;
-	qi::rule<iterator, int(), ascii::space_type> rInt;
+	qi::rule<iterator, int(), ascii::space_type> _int;
 	qi::rule<iterator, std::string(), ascii::space_type> start_tag;
 	qi::rule<iterator, void(std::string), ascii::space_type> end_tag;
 };
 
-static const std::string rec("<foo>123</foo>");
+static const std::string rec(
+	R"file(
+			<a>hello</a>
+			<b>world!</b>
+			<c>123</c>
+		)file");
 
 int main()
 {
@@ -91,7 +111,7 @@ int main()
 	{
 		std::cout << "-------------------------\n";
 		std::cout << "Parsing succeeded\n";
-		std::cout << "got: " << boost::lexical_cast<std::string>(emp.val) << std::endl;
+		std::cout << "got: " << emp.val1 << ", " << emp.val2 << ", " << boost::lexical_cast<int>(emp.val3) << std::endl;
 		std::cout << "\n-------------------------\n";
 	}
 	else
