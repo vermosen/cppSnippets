@@ -32,3 +32,4 @@ _ReSharper*/
 *VC.db
 *VC.openDB
 /enumFactoryExample2/My Amplifier XE Results - enumFactoryExample2
+*.ipch

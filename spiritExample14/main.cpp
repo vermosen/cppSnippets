@@ -45,7 +45,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 template <typename iterator>
-struct record_parser : qi::grammar<iterator, node(), qi::locals<std::string>, ascii::space_type>
+struct record_parser : qi::grammar<iterator, node(), ascii::space_type>
 {
 	record_parser() : record_parser::base_type(start)
 	{
@@ -60,11 +60,11 @@ struct record_parser : qi::grammar<iterator, node(), qi::locals<std::string>, as
 		using phx::at_c;
 		using phx::push_back;
 
-		rTextBase = 
+		rTextBase =
 			lexeme[+(char_ - '<')[_val += _1]]
 			;
 
-		rIntBase = 
+		rIntBase =
 			lexeme[int_[_val = _1]]
 			;
 
@@ -100,23 +100,31 @@ struct record_parser : qi::grammar<iterator, node(), qi::locals<std::string>, as
 			>> rEndTag(_a)
 			;
 
-		start =
-			rHeader
-			>> rStartTag[_a = _1]
+		rNode =
+			rStartTag[_a = _1]
 			>> rText[at_c<0>(_val) = _1]
 			>> rText[at_c<1>(_val) = _1]
 			>> rInt[at_c<2>(_val) = _1]
 			>> rEndTag(_a)
 			;
 
+		start =
+			rHeader
+			>> rNode[_val = _1]
+			;
+
 		rHeader.name("rHeader");
 		BOOST_SPIRIT_DEBUG_NODE(rHeader);
+
+		rNode.name("rNode");
+		BOOST_SPIRIT_DEBUG_NODE(rNode);
 
 		start.name("start");
 		BOOST_SPIRIT_DEBUG_NODE(start);
 	}
 
-	qi::rule<iterator, node(), qi::locals<std::string>, ascii::space_type> start;
+	qi::rule<iterator, node(), qi::locals<std::string>, ascii::space_type> rNode;
+	qi::rule<iterator, node(), ascii::space_type> start;
 	qi::rule<iterator, std::string(), qi::locals<std::string>, ascii::space_type> rText;
 	qi::rule<iterator, int(), qi::locals<std::string>, ascii::space_type> rInt;
 	qi::rule<iterator, std::string(), ascii::space_type> rTextBase;
