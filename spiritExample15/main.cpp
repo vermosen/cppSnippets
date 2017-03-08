@@ -24,10 +24,10 @@ struct child
 	int val2;
 };
 
-struct parent
+struct settings
 {
 	std::string val1;
-	child val2;
+	std::vector<child> val2;
 	int val3;
 };
 
@@ -38,14 +38,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-	parent,
+	settings,
 	(std::string, val1)
-	(child, val2)
+	(std::vector<child>, val2)
 	(int, val3)
 )
 
 template <typename iterator>
-struct record_parser : qi::grammar<iterator, parent(), ascii::space_type>
+struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 {
 	record_parser() : record_parser::base_type(start)
 	{
@@ -78,7 +78,7 @@ struct record_parser : qi::grammar<iterator, parent(), ascii::space_type>
 		rStartTag =
 			'<'
 			>> !lit('/')
-			>> lexeme[+(char_ - '>')]
+			>> qi::lit(_r1)[_val = _r1]
 			>> '>'
 			;
 
@@ -89,35 +89,39 @@ struct record_parser : qi::grammar<iterator, parent(), ascii::space_type>
 			;
 
 		rText =
-			rStartTag[_a = _1]
+			rStartTag(_r1)[_a = _1]
 			>> rTextBase[_val = _1]
 			>> rEndTag(_a)
 			;
 
 		rInt =
-			rStartTag[_a = _1]
+			rStartTag(_r1)[_a = _1]
 			>> rIntBase[_val = _1]
 			>> rEndTag(_a)
 			;
 
 		rChild =
-			rStartTag[_a = _1]
-			>> rText[at_c<0>(_val) = _1]
-			>> rInt[at_c<1>(_val) = _1]
+			rStartTag(std::string("child"))[_a = _1]
+			>> rText(std::string("val1"))[at_c<0>(_val) = _1]
+			>> rInt(std::string("val2"))[at_c<1>(_val) = _1]
 			>> rEndTag(_a)
 			;
 
-		rParent =
-			rStartTag[_a = _1]
-			>> rText[at_c<0>(_val) = _1]
-			>> rChild[at_c<1>(_val) = _1]
-			>> rInt[at_c<2>(_val) = _1]
+		rChildren =
+			*(rChild)
+			;
+
+		rSettings =
+			rStartTag(std::string("settings"))[_a = _1]
+			>> rText(std::string("val1"))[at_c<0>(_val) = _1]
+			>> rChildren[at_c<1>(_val) = _1]
+			>> rInt(std::string("val3"))[at_c<2>(_val) = _1]
 			>> rEndTag(_a)
 			;
 
 		start =
 			rHeader
-			>> rParent[_val = _1]
+			>> rSettings[_val = _1]
 			;
 
 		rHeader.name("rHeader");
@@ -126,21 +130,25 @@ struct record_parser : qi::grammar<iterator, parent(), ascii::space_type>
 		rChild.name("rChild");
 		BOOST_SPIRIT_DEBUG_NODE(rChild);
 
-		rParent.name("rParent");
-		BOOST_SPIRIT_DEBUG_NODE(rParent);
+		rChildren.name("rChildren");
+		BOOST_SPIRIT_DEBUG_NODE(rChildren);
+
+		rSettings.name("rSettings");
+		BOOST_SPIRIT_DEBUG_NODE(rSettings);
 
 		start.name("start");
 		BOOST_SPIRIT_DEBUG_NODE(start);
 	}
 
-	qi::rule<iterator, parent(), qi::locals<std::string>, ascii::space_type> rParent;
+	qi::rule<iterator, settings(), qi::locals<std::string>, ascii::space_type> rSettings;
 	qi::rule<iterator, child(), qi::locals<std::string>, ascii::space_type> rChild;
-	qi::rule<iterator, parent(), ascii::space_type> start;
-	qi::rule<iterator, std::string(), qi::locals<std::string>, ascii::space_type> rText;
-	qi::rule<iterator, int(), qi::locals<std::string>, ascii::space_type> rInt;
+	qi::rule<iterator, std::vector<child>(), ascii::space_type> rChildren;
+	qi::rule<iterator, settings(), ascii::space_type> start;
+	qi::rule<iterator, std::string(std::string), qi::locals<std::string>, ascii::space_type> rText;
+	qi::rule<iterator, int(std::string), qi::locals<std::string>, ascii::space_type> rInt;
 	qi::rule<iterator, std::string(), ascii::space_type> rTextBase;
 	qi::rule<iterator, int(), ascii::space_type> rIntBase;
-	qi::rule<iterator, std::string(), ascii::space_type> rStartTag;
+	qi::rule<iterator, std::string(std::string), ascii::space_type> rStartTag;
 	qi::rule<iterator, void(std::string), ascii::space_type> rEndTag;
 	qi::rule<iterator, std::string(), ascii::space_type> rHeader;
 };
@@ -149,14 +157,18 @@ struct record_parser : qi::grammar<iterator, parent(), ascii::space_type>
 static const std::string rec(
 	R"file(
 			<?xml version="1.0" encoding="utf-8"?>
-			<d>
-				<a>hello</a>
-				<b>
-					<e>world!</e>
-					<f>1</f>
-				</b>
-				<c>2</c>
-			</d>
+			<settings>
+				<val1>foo</val1>
+				<child>
+					<val1>hello</val1>
+					<val2>1</val2>
+				</child>
+				<child>
+					<val1>world!</val1>
+					<val2>1</val2>
+				</child>
+				<val3>2</val3>
+			</settings>
 		)file");
 
 int main()
@@ -166,7 +178,7 @@ int main()
 
 	record_parser g; // Our grammar
 
-	parent emp;
+	settings emp;
 	iterator_type iter = rec.begin(), end = rec.end();
 
 	if (phrase_parse(iter, end, g, ascii::space, emp) && iter == end)
