@@ -121,7 +121,6 @@ struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 	qi::rule<iterator, std::string(std::string), qi::locals<std::string>, ascii::space_type> rText;
 	qi::rule<iterator, std::string(), ascii::space_type> rTextBase;
 
-
 	qi::rule<iterator, std::string(std::string), ascii::space_type> rStartTag;
 	qi::rule<iterator, void(std::string), ascii::space_type> rEndTag;
 };
