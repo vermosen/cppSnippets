@@ -2,11 +2,7 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 #include <boost/fusion/include/boost_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -21,20 +17,16 @@ namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 
-struct child
-{
-	std::string val1;
-	int val2;
-};
-
 struct settings
 {
 	boost::gregorian::date startDate;
+	boost::gregorian::date endDate;
 };
 
 BOOST_FUSION_ADAPT_STRUCT(
 	settings,
 	(boost::gregorian::date, startDate)
+	(boost::gregorian::date, endDate)
 )
 
 typedef boost::tuple<int, int, int> dateAdaptor;
@@ -70,12 +62,16 @@ struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 		using phx::at_c;
 		using phx::push_back;
 
+		rTextBase = 
+			*(qi::char_ - "</")
+			;
+
 		rDateBase =
-			qi::int_[_pass = (_1 >= 1400 && _1 < 10000)]
-			>> "-"
-			>> qi::int_[_pass = (_1 > 0 && _1 <= 12)]
-			>> "-"
-			>> qi::int_[_pass = (_1 > 0 && _1 <= 31)]
+			qi::int_[_pass = (qi::_1 >= 1400 && qi::_1 < 10000)][at_c<0>(_val) = _1]
+			> '-'
+			> qi::int_[_pass = (qi::_1 > 0 && qi::_1 <= 12)][at_c<1>(_val) = _1]
+			> '-'
+			> qi::int_[_pass = (qi::_1 > 0 && qi::_1 <= 31)][at_c<2>(_val) = _1]
 			;
 
 		rStartTag =
@@ -91,32 +87,49 @@ struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 			>> '>'
 			;
 
+		rText =
+			rStartTag(_r1)[_a = _1]
+			> rTextBase[_val = _1]
+			> rEndTag(_a)
+			;
+
 		rDate =
 			rStartTag(_r1)[_a = _1]
-			>> rDateBase[_val = _1]
-			>> rEndTag(_a)
+			> rDateBase[_val = _1]
+			> rEndTag(_a)
 			;
 
 		start =
-			rDate("startDate")
+			rDate(std::string("startDate")) >>
+			rDate(std::string("endDate"))
 			;
 
 		start.name("start");
 		BOOST_SPIRIT_DEBUG_NODE(start);
+
+		rDate.name("rDate");
+		BOOST_SPIRIT_DEBUG_NODE(rDate);
+
+		rDateBase.name("rDateBase");
+		BOOST_SPIRIT_DEBUG_NODE(rDateBase);
 	}
 
 	qi::rule<iterator, settings(), ascii::space_type> start;
 
 	qi::rule<iterator, dateAdaptor(std::string), qi::locals<std::string>, ascii::space_type> rDate;
 	qi::rule<iterator, dateAdaptor(), ascii::space_type> rDateBase;
+	qi::rule<iterator, std::string(std::string), qi::locals<std::string>, ascii::space_type> rText;
+	qi::rule<iterator, std::string(), ascii::space_type> rTextBase;
+
+
 	qi::rule<iterator, std::string(std::string), ascii::space_type> rStartTag;
 	qi::rule<iterator, void(std::string), ascii::space_type> rEndTag;
 };
 
-//<?xml version="1.0" encoding="utf-8"?>
 static const std::string rec(
 	R"file(
-			<startDate>2017-01-01</startDate>
+			<startDate>2017-11-01</startDate>
+			<endDate>2017-01-11</endDate>
 		)file");
 
 int main()

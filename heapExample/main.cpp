@@ -4,6 +4,7 @@
 #include <map>
 #include <array>
 #include <memory>
+#include <string>
 
 class orderBook
 {
@@ -27,7 +28,7 @@ public:
 			data_.insert(it, std::make_pair(key, val));
 
 			// insert the iterator
-			p.push_back(&(it));
+			//p.push_back(&(it));
 		}
 		else
 		{

@@ -2,11 +2,7 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 #include <boost/fusion/include/boost_tuple.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -21,32 +17,16 @@ namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 namespace phx = boost::phoenix;
 
-struct child
-{
-	std::string val1;
-	int val2;
-};
-
 struct settings
 {
 	boost::gregorian::date startDate;
 	boost::gregorian::date endDate;
-	std::vector<child> val2;
-	int val3;
 };
-
-BOOST_FUSION_ADAPT_STRUCT(
-	child,
-	(std::string, val1)
-	(int, val2)
-)
 
 BOOST_FUSION_ADAPT_STRUCT(
 	settings,
 	(boost::gregorian::date, startDate)
 	(boost::gregorian::date, endDate)
-	(std::vector<child>, val2)
-	(int, val3)
 )
 
 typedef boost::tuple<int, int, int> dateAdaptor;
@@ -82,27 +62,23 @@ struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 		using phx::at_c;
 		using phx::push_back;
 
+		rTextBase =
+			*(qi::char_ - "</")
+			;
+
+		rDateBase =
+			qi::int_[_pass = (qi::_1 >= 1400 && qi::_1 < 10000)][at_c<0>(_val) = _1]
+			> '-'
+			> qi::int_[_pass = (qi::_1 > 0 && qi::_1 <= 12)][at_c<1>(_val) = _1]
+			> '-'
+			> qi::int_[_pass = (qi::_1 > 0 && qi::_1 <= 31)][at_c<2>(_val) = _1]
+			;
+
 		rHeader %=
 			"<?"
 			>> !lit('/')
 			>> lexeme[+(char_ - "?>")]
 			>> "?>"
-			;
-
-		rTextBase =
-			lexeme[+(char_ - '<')[_val += _1]]
-			;
-
-		//rDateBase =
-		//	lexeme[qi::int_[_pass = (_1 >= 1400 && _1 < 10000)]
-		//	>> "-"
-		//	>> qi::int_[_pass = (_1 > 0 && _1 <= 12)] 
-		//	>> "-"
-		//	>> qi::int_[_pass = (_1 > 0 && _1 <= 31)] ]
-		//	;
-
-		rIntBase =
-			lexeme[int_[_val = _1]]
 			;
 
 		rStartTag =
@@ -120,103 +96,60 @@ struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 
 		rText =
 			rStartTag(_r1)[_a = _1]
-			>> rTextBase[_val = _1]
-			>> rEndTag(_a)
+			> rTextBase[_val = _1]
+			> rEndTag(_a)
 			;
 
 		rDate =
 			rStartTag(_r1)[_a = _1]
-			>> qi::int_[_pass = (_1 >= 1400 && _1 < 10000)][at_c<0>(_val) = _1]
-			>> "-"
-			>> qi::int_[_pass = (_1 > 0 && _1 <= 12)][at_c<1>(_val) = _1]
-			>> "-"
-			>> qi::int_[_pass = (_1 > 0 && _1 <= 31)][at_c<2>(_val) = _1]
-			>> rEndTag(_a)
-			;
-
-		rInt =
-			rStartTag(_r1)[_a = _1]
-			>> rIntBase[_val = _1]
-			>> rEndTag(_a)
-			;
-
-		rChild =
-			rStartTag(std::string("child"))[_a = _1]
-			>> rText(std::string("val1"))[at_c<0>(_val) = _1]
-			>> rInt(std::string("val2"))[at_c<1>(_val) = _1]
-			>> rEndTag(_a)
-			;
-
-		rChildren =
-			*(rChild)
+			> rDateBase[_val = _1]
+			> rEndTag(_a)
 			;
 
 		rSettings =
-			rStartTag(std::string("settings"))[_a = _1]
+			rStartTag(_r1)[_a = _1]
 			>> rDate(std::string("startDate"))[at_c<0>(_val) = _1]
 			>> rDate(std::string("endDate"))[at_c<1>(_val) = _1]
-			>> rChildren[at_c<2>(_val) = _1]
-			>> rInt(std::string("val3"))[at_c<3>(_val) = _1]
 			>> rEndTag(_a)
 			;
 
 		start =
 			rHeader
-			>> rSettings[_val = _1]
+			>> rSettings(std::string("settings"))[_val = _1]
 			;
 
-		rHeader.name("rHeader");
-		//BOOST_SPIRIT_DEBUG_NODE(rHeader);
+		start.name("start");
+		BOOST_SPIRIT_DEBUG_NODE(start);
 
-		rChild.name("rChild");
-		//BOOST_SPIRIT_DEBUG_NODE(rChild);
+		rDate.name("rDate");
+		BOOST_SPIRIT_DEBUG_NODE(rDate);
 
-		rChildren.name("rChildren");
-		//BOOST_SPIRIT_DEBUG_NODE(rChildren);
+		rDateBase.name("rDateBase");
+		BOOST_SPIRIT_DEBUG_NODE(rDateBase);
 
 		rSettings.name("rSettings");
-		//BOOST_SPIRIT_DEBUG_NODE(rSettings);
-
-		start.name("start");
-		//BOOST_SPIRIT_DEBUG_NODE(start);
+		BOOST_SPIRIT_DEBUG_NODE(rSettings);
 	}
 
 	qi::rule<iterator, settings(), ascii::space_type> start;
 
-	qi::rule<iterator, settings(), qi::locals<std::string>, ascii::space_type> rSettings;
-	qi::rule<iterator, child(), qi::locals<std::string>, ascii::space_type> rChild;
-	qi::rule<iterator, std::vector<child>(), ascii::space_type> rChildren;
+	qi::rule<iterator, settings(std::string), qi::locals<std::string>, ascii::space_type> rSettings;
 
 	qi::rule<iterator, std::string(std::string), qi::locals<std::string>, ascii::space_type> rText;
 	qi::rule<iterator, dateAdaptor(std::string), qi::locals<std::string>, ascii::space_type> rDate;
-	qi::rule<iterator, int(std::string), qi::locals<std::string>, ascii::space_type> rInt;
 
+	qi::rule<iterator, dateAdaptor(), ascii::space_type> rDateBase;
 	qi::rule<iterator, std::string(), ascii::space_type> rTextBase;
-	//qi::rule<iterator, dateAdaptor(), ascii::space_type> rDateBase;
-	qi::rule<iterator, int(), ascii::space_type> rIntBase;
 
+	qi::rule<iterator, std::string(), ascii::space_type> rHeader;
 	qi::rule<iterator, std::string(std::string), ascii::space_type> rStartTag;
 	qi::rule<iterator, void(std::string), ascii::space_type> rEndTag;
-	qi::rule<iterator, std::string(), ascii::space_type> rHeader;
 };
 
-//<?xml version="1.0" encoding="utf-8"?>
 static const std::string rec(
 	R"file(
-			<?xml version="1.0" encoding="utf-8"?>
-			<settings>
-				<startDate>2017-01-01</startDate>
-				<endDate>2017-01-02</endDate>
-				<child>
-					<val1>hello</val1>
-					<val2>1</val2>
-				</child>
-				<child>
-					<val1>world!</val1>
-					<val2>1</val2>
-				</child>
-				<val3>2</val3>
-			</settings>
+			<startDate>2017-11-01</startDate>
+			<endDate>2017-01-11</endDate>
 		)file");
 
 int main()
