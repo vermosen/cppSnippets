@@ -128,7 +128,7 @@ struct record_parser : qi::grammar<iterator, settings(), ascii::space_type>
 	qi::rule<iterator, settings(std::string), qi::locals<std::string>, ascii::space_type> rSettings;
 	qi::rule<iterator, dateAdaptor(std::string), qi::locals<std::string>, ascii::space_type> rDate;
 	qi::rule<iterator, std::string(std::string), qi::locals<std::string>, ascii::space_type> rText;
-	
+
 	qi::rule<iterator, dateAdaptor(), ascii::space_type> rDateBase;
 	qi::rule<iterator, std::string(), ascii::space_type> rTextBase;
 
