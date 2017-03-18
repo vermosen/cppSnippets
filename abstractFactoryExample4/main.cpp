@@ -12,7 +12,7 @@ int main()
 {
 	try
 	{
-		boost::shared_ptr<base> c = factory<base, std::string, std::tuple<int, int> >::createInstance("A", std::tuple<int, int>(1, 3));
+		boost::shared_ptr<base> c = factory<base, std::string, std::string, int>::createInstance("A", "A", 1);
 
 		c->foo();
 	}
@@ -23,4 +23,5 @@ int main()
 	}
 
 	return 0;
+
 }

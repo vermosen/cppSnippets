@@ -8,8 +8,8 @@
 # include "registrable/child.hpp"
 
 // an example of abstract factory with auto-registration of the classes
-int main() {
-
+int main() 
+{
 	try
 	{
 		std::vector<boost::shared_ptr<base> > vec;
@@ -28,7 +28,6 @@ int main() {
 		{
 			it->get()->foo();
 		}
-		
 	}
 	catch (const std::exception&)
 	{
@@ -37,5 +36,4 @@ int main() {
 	}
 
 	return 0;
-
 }
