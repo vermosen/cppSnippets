@@ -6,6 +6,7 @@
 
 // an abstract factory class 
 // with self management functionalities
+// in this version we (try to)  use variadic templates
 template <typename C, typename K, typename ... Args>
 class factory
 {
