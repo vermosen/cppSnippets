@@ -102,6 +102,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "longestPalindrome", "longes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample20", "spiritExample20\spiritExample20.vcxproj", "{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample21", "spiritExample21\spiritExample21.vcxproj", "{491E0D79-334F-4F61-822D-EF742FFA4621}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (intel)|x64 = Debug (intel)|x64
@@ -649,6 +651,18 @@ Global
 		{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0}.Release|x64.Build.0 = Release|x64
 		{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0}.Release|x86.ActiveCfg = Release|Win32
 		{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0}.Release|x86.Build.0 = Release|Win32
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug (intel)|x64.ActiveCfg = Debug|x64
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug (intel)|x64.Build.0 = Debug|x64
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug (intel)|x86.ActiveCfg = Debug|Win32
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug (intel)|x86.Build.0 = Debug|Win32
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug|x64.ActiveCfg = Debug|x64
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug|x64.Build.0 = Debug|x64
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug|x86.ActiveCfg = Debug|Win32
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Debug|x86.Build.0 = Debug|Win32
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Release|x64.ActiveCfg = Release|x64
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Release|x64.Build.0 = Release|x64
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Release|x86.ActiveCfg = Release|Win32
+		{491E0D79-334F-4F61-822D-EF742FFA4621}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -680,5 +694,6 @@ Global
 		{4E69F24C-5761-49BB-B453-6C5B879C2AFA} = {71E482B5-7B7B-47E5-84A0-CD8D7CCB7044}
 		{032476AF-D416-42D2-B413-1CC4E41E0BC0} = {71E482B5-7B7B-47E5-84A0-CD8D7CCB7044}
 		{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0} = {63333CE2-C904-4890-AB6C-1737FB53AED9}
+		{491E0D79-334F-4F61-822D-EF742FFA4621} = {63333CE2-C904-4890-AB6C-1737FB53AED9}
 	EndGlobalSection
 EndGlobal

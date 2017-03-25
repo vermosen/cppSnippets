@@ -9,6 +9,7 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/io.hpp>
+#include <boost/phoenix/bind.hpp>
 
 #include <iostream>
 #include <string>
@@ -24,7 +25,6 @@ namespace test
 	///////////////////////////////////////////////////////////////////////////
 	struct record
 	{
-		int age;
 		std::string surname;
 		std::string forename;
 		boost::optional<double> salary;
@@ -35,12 +35,47 @@ namespace test
 //[tutorial_employee_adapt_struct
 BOOST_FUSION_ADAPT_STRUCT(
 	test::record,
-	(int, age)
 	(std::string, surname)
 	(std::string, forename)
 	(boost::optional<double>, salary)
 )
 //]
+
+using namespace boost::spirit;
+
+struct errorHandler
+{
+	errorHandler() = default;
+	errorHandler(errorHandler const&) = delete;
+
+	template<typename...> struct result { typedef void type; };
+	template<typename Iter> void operator()(
+		Iter & first_iter, Iter last_iter,
+		Iter error_iter, const qi::info& what) const
+	{
+		Iter start = error_iter, end = start;
+
+		// select the record
+		while (!(*end == '"' && *(end + 1) == ',' && *(end + 2) == '"'))
+		{
+			end++;
+		};
+
+		if (start == end) return;
+
+		if (!isascii(*start))
+		{
+			for (auto it = start; it != (end + 1); ++it)
+			{
+				if (!isascii(*it)) *it = (char)0x20;
+			}
+		}
+		else
+		{
+			throw std::exception();
+		}
+	}
+};
 
 namespace test
 {
@@ -54,51 +89,55 @@ namespace test
 		record_parser() : record_parser::base_type(rRecords)
 		{
 			using qi::int_;
-			using qi::_val;
-			using qi::_1;
 			using qi::lit;
 			using qi::double_;
 			using qi::lexeme;
 			using ascii::char_;
+			using qi::eps;
 
 			rString
-				%= lexeme[+(char_ - lit("\",\""))];
-
-			rOptString
-				%= lit("")
-					|
-				rString;
+				%= lexeme[eps > *(char_ - lit("\",\""))];
 
 			rOptDouble
 				%= -(double_);
 
 			rRecord 
 				%= lit("record")
-				>> "{\""
-				>> int_		>> "\",\""
-				>> rString	>> "\",\""
-				>> rString >> "\",\""
-				>> rOptDouble
-				>> "\"}"
+				> "{\""
+				> rString		> "\",\""
+				> rString		> "\",\""
+				> rOptDouble	> "\"}"
 				;
 
 			rRecords = +(rRecord >> qi::eol);
 
-			rOptDouble.name("rOptDouble");
-			BOOST_SPIRIT_DEBUG_NODES((rOptDouble))
-			debug(rOptDouble);
+			qi::on_error<qi::retry>
+			(
+				rRecord, boost::phoenix::bind
+				(boost::phoenix::ref(errorHandler_),
+					qi::_1, // it start
+					qi::_2, // it end
+					qi::_3, // it error
+					qi::_4  // error what 
+				)
+			);
+
+			rString.name("rString");
+			BOOST_SPIRIT_DEBUG_NODES((rString))
+			debug(rString);
 		}
 
 		qi::rule<Iterator, std::string(), ascii::blank_type> rString;
-		qi::rule<Iterator, std::string(), ascii::blank_type> rOptString;
 		qi::rule<Iterator, boost::optional<double>(), ascii::blank_type> rOptDouble;
 		qi::rule<Iterator, record(), ascii::blank_type> rRecord;
 		qi::rule<Iterator, std::vector<record>(), ascii::blank_type> rRecords;
+
+		errorHandler errorHandler_;
 	};
 	//]
 }
 
-static const std::string recs("record{\"36\",\"vermosen\",\"jean-mathieu\",\"\"}\n");
+static std::string recs("record{\"verm€osen\",\"\",\"160000\"}\n");
 boost::chrono::high_resolution_clock::time_point start;
 
 ////////////////////////////////////////////////////////////////////////////
@@ -112,7 +151,7 @@ int main()
 	std::cout << "/////////////////////////////////////////////////////////\n\n";
 
 	using boost::spirit::ascii::blank;
-	typedef std::string::const_iterator iterator_type;
+	typedef std::string::iterator iterator_type;
 	typedef test::record_parser<iterator_type> record_parser;
 
 	record_parser g; // Our grammar
@@ -120,8 +159,8 @@ int main()
 	start = boost::chrono::high_resolution_clock::now();
 
 	std::vector<test::record> emps;
-	std::string::const_iterator iter = recs.begin();
-	std::string::const_iterator end = recs.end();
+	iterator_type iter = recs.begin();
+	iterator_type end = recs.end();
 
 	bool r = boost::spirit::qi::phrase_parse(iter, end, g, blank, emps);
 
