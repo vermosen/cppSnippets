@@ -7,14 +7,26 @@
 #include <boost/atomic.hpp>
 #include <boost/scoped_ptr.hpp>
 
+class connector
+{
+public:
+	connector(boost::shared_ptr<boost::asio::io_service> io, const std::string & host, int port)
+		: io_(io)
+		, resolver_(*io)
+		, socket_(*io) {}
+
+	boost::shared_ptr<boost::asio::io_service> service() { return io_; }
+private:
+	boost::shared_ptr<boost::asio::io_service> io_;
+	boost::asio::ip::tcp::resolver resolver_;
+	boost::asio::ip::tcp::socket socket_;
+};
+
 class urlReader
 {
 public:
-
-	urlReader(boost::shared_ptr<boost::asio::io_service> io, const std::string & host, int port, const std::string & path)
-		: resolver_(*io)
-		, socket_(*io)
-		, strand_(*io)
+	urlReader(boost::shared_ptr<connector> cnx, const std::string & host, int port, const std::string & path)
+		: strand_(*io)
 		, answered_(false)
 	{
 		auto query = boost::shared_ptr<boost::asio::ip::tcp::resolver::query>(
@@ -218,7 +230,7 @@ private:
 				content_ << &response_;
 			}
 
-			success_ = true; answered_ = true; condition_.notify_one(); 
+			success_ = true; answered_ = true; condition_.notify_one();
 		}
 		else if (err != boost::asio::error::eof)
 		{
@@ -227,8 +239,6 @@ private:
 	}
 
 private:
-	boost::asio::ip::tcp::resolver resolver_;
-	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
 
 	std::stringstream content_;
@@ -250,8 +260,11 @@ private:
 	boost::atomic<bool> 		answered_;
 };
 
+// multithreaded version of urlReader1
 int main()
 {
+	int size = 10;
+
 	// initialize and run the service
 	boost::shared_ptr<boost::asio::io_service> io(
 		new boost::asio::io_service);
@@ -262,13 +275,19 @@ int main()
 	// runs in a separate thread
 	boost::thread t([&] { io->run(); });
 
-	{
-		// run from the main thread
-		urlReader u(io, "www.google.com", 80, "");
+	std::vector<boost::shared_ptr<urlReader>> readers;
 
-		auto str = u.getStream();
+	for (int i = 0; i < size; i++)
+	{
+		readers.push_back(boost::shared_ptr<urlReader>(
+			new urlReader(io, "www.google.com", 80, "")));
 	}
-	
+
+	for (int i = 0; i < size; i++)
+	{
+		auto str = readers[i]->getStream();
+	}
+
 	work.reset();
 
 	t.join();

@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{032476AF-D416-42D2-B413-1CC4E41E0BC0}</ProjectGuid>
+    <ProjectGuid>{554BFD2B-2040-4D06-A3E4-BA585826493D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>urlReader</RootNamespace>
+    <RootNamespace>nonStoppingService</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>urlReader1</ProjectName>
+    <ProjectName>multithreadTimer2</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
