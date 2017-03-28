@@ -7,48 +7,100 @@
 #include <boost/atomic.hpp>
 #include <boost/scoped_ptr.hpp>
 
+// maintains the connection to a host
 class connector
 {
 public:
 	connector(boost::shared_ptr<boost::asio::io_service> io, const std::string & host, int port)
-		: io_(io)
-		, resolver_(*io)
-		, socket_(*io) {}
-
-	boost::shared_ptr<boost::asio::io_service> service() { return io_; }
-private:
-	boost::shared_ptr<boost::asio::io_service> io_;
-	boost::asio::ip::tcp::resolver resolver_;
-	boost::asio::ip::tcp::socket socket_;
-};
-
-class urlReader
-{
-public:
-	urlReader(boost::shared_ptr<connector> cnx, const std::string & host, int port, const std::string & path)
-		: strand_(*io)
-		, answered_(false)
+		: io_		(io		)
+		, socket_	(*io_	)
+		, resolver_	(*io_	)
+		, strand_	(*io_	)
+		, host_		(host	)
+		, port_		(port	) 
 	{
 		auto query = boost::shared_ptr<boost::asio::ip::tcp::resolver::query>(
 			new boost::asio::ip::tcp::resolver::query(
-				host, boost::lexical_cast<std::string>(port)));
+				host_, boost::lexical_cast<std::string>(port_)));
 
+		resolver_.async_resolve(*query, strand_.wrap(
+			boost::bind(&connector::handle_resolve, this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::iterator))); 
+	}
+
+	boost::shared_ptr<boost::asio::io_service> service() { return io_; }
+	boost::asio::ip::tcp::socket & socket() { return socket_; }
+	const std::string & host() const { return host_; }
+	bool connected() const { return connected_; }
+
+private:
+	void connector::handle_resolve(const boost::system::error_code& err,
+		boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+	{
+		if (!err)
+		{
+			boost::asio::async_connect(socket_.lowest_layer(), endpoint_iterator,
+				strand_.wrap(boost::bind(&connector::handle_connect, this,
+					boost::asio::placeholders::error)));
+		}
+		else
+		{
+			connected_ = false;
+		}
+	}
+
+	void connector::handle_connect(const boost::system::error_code& err)
+	{
+		if (!err)
+		{
+			std::cout << "connection successful !" << std::endl;
+		}
+		else
+		{
+			connected_ = false;
+		}
+	}
+
+	boost::shared_ptr<boost::asio::io_service> io_;
+	boost::asio::ip::tcp::resolver resolver_;
+	boost::asio::strand strand_;
+	boost::asio::ip::tcp::socket socket_;
+
+	bool connected_;
+	std::string host_;
+	int port_;
+};
+
+// read a page content
+class queryReader
+{
+public:
+	queryReader(boost::shared_ptr<connector> cnx, const std::string & path, int timeout = 5000)
+		: cnx_(cnx)
+		, strand_(*cnx->service())
+		, timeout_(timeout)
+		, answered_(false)
+	{
 		// build the query
 		std::ostream request_stream(&request_);
 		request_stream << "GET /";
 		request_stream << path;
 		request_stream << " HTTP/1.1\r\n";
-		request_stream << "Host: " << host << "\r\n";
+		request_stream << "Host: " << cnx->host() << "\r\n";
 		request_stream << "Accept: */*\r\n";
 		request_stream << "Connection: close\r\n\r\n";
 
-		resolver_.async_resolve(*query, strand_.wrap(
-			boost::bind(&urlReader::handle_resolve, this,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::iterator)));
+		if (cnx_->connected())
+		{
+			boost::asio::async_write(cnx_->socket(), request_,
+				strand_.wrap(boost::bind(&queryReader::handle_write_request, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred)));
+		}
 	}
 
-	std::string urlReader::getStream()
+	std::string queryReader::getStream()
 	{
 		if (!answered_)
 		{
@@ -58,7 +110,7 @@ public:
 
 			// should be useless...
 			while (!answered_ && boost::chrono::duration_cast<boost::chrono::milliseconds>(
-				timer.now() - start).count() < 10000)
+				timer.now() - start).count() < timeout_)
 			{
 				condition_.wait(lock);
 			}
@@ -69,26 +121,12 @@ public:
 
 private:
 	// client callbacks
-	void urlReader::handle_resolve(const boost::system::error_code& err,
-		boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+	void queryReader::handle_write_request(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
-			boost::asio::async_connect(socket_.lowest_layer(), endpoint_iterator,
-				strand_.wrap(boost::bind(&urlReader::handle_connect, this,
-					boost::asio::placeholders::error)));
-		}
-		else
-		{
-			answered_ = true; condition_.notify_one();
-		}
-	}
-	void urlReader::handle_connect(const boost::system::error_code& err)
-	{
-		if (!err)
-		{
-			boost::asio::async_write(socket_, request_,
-				strand_.wrap(boost::bind(&urlReader::handle_write_request, this,
+			boost::asio::async_read_until(cnx_->socket(), response_, "\r\n",
+				strand_.wrap(boost::bind(&queryReader::handle_read_status_line, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -97,21 +135,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_write_request(const boost::system::error_code& err, size_t bytes_transferred)
-	{
-		if (!err)
-		{
-			boost::asio::async_read_until(socket_, response_, "\r\n",
-				strand_.wrap(boost::bind(&urlReader::handle_read_status_line, this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)));
-		}
-		else
-		{
-			answered_ = true; condition_.notify_one();
-		}
-	}
-	void urlReader::handle_read_status_line(const boost::system::error_code& err, size_t bytes_transferred)
+	void queryReader::handle_read_status_line(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -134,16 +158,16 @@ private:
 			if (status_code == 200)
 			{
 				// Read the response headers, which are terminated by a blank line.
-				boost::asio::async_read_until(socket_, response_, "\r\n\r\n",
-					strand_.wrap(boost::bind(&urlReader::handle_read_headers, this,
+				boost::asio::async_read_until(cnx_->socket(), response_, "\r\n\r\n",
+					strand_.wrap(boost::bind(&queryReader::handle_read_headers, this,
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred)));
 			}
 			else if (status_code == 302)							// redirection
 			{
 				// Read the response headers, which are terminated by a blank line.
-				boost::asio::async_read_until(socket_, response_, "\r\n\r\n",
-					strand_.wrap(boost::bind(&urlReader::handle_redirection, this,
+				boost::asio::async_read_until(cnx_->socket(), response_, "\r\n\r\n",
+					strand_.wrap(boost::bind(&queryReader::handle_redirection, this,
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred)));
 			}
@@ -158,7 +182,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_redirection(const boost::system::error_code& err, size_t bytes_transferred)
+	void queryReader::handle_redirection(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -179,7 +203,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_read_headers(const boost::system::error_code& err, size_t bytes_transferred)
+	void queryReader::handle_read_headers(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -197,9 +221,9 @@ private:
 			}
 
 			// Start reading remaining data until EOF.
-			boost::asio::async_read(socket_, response_,
+			boost::asio::async_read(cnx_->socket(), response_,
 				boost::asio::transfer_at_least(1),
-				strand_.wrap(boost::bind(&urlReader::handle_read_content, this,
+				strand_.wrap(boost::bind(&queryReader::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -208,14 +232,14 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_read_content(const boost::system::error_code& err, size_t bytes_transferred)
+	void queryReader::handle_read_content(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
 			// Continue reading remaining data until EOF.
-			boost::asio::async_read(socket_, response_,
+			boost::asio::async_read(cnx_->socket(), response_,
 				boost::asio::transfer_at_least(1),
-				strand_.wrap(boost::bind(&urlReader::handle_read_content, this,
+				strand_.wrap(boost::bind(&queryReader::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -239,6 +263,7 @@ private:
 	}
 
 private:
+	boost::shared_ptr<connector> cnx_;
 	boost::asio::strand strand_;
 
 	std::stringstream content_;
@@ -254,13 +279,20 @@ private:
 	bool chunked_;
 	int chunckSize_;
 
+	// timeout
+	int timeout_;
+
 	// for async controls
 	boost::mutex 				ioMutex_;
 	boost::condition_variable 	condition_;
 	boost::atomic<bool> 		answered_;
 };
 
-// multithreaded version of urlReader1
+bool finished = false;
+boost::mutex m;
+boost::condition_variable cv;
+
+// multithreaded version of queryReader1
 int main()
 {
 	int size = 10;
@@ -275,18 +307,25 @@ int main()
 	// runs in a separate thread
 	boost::thread t([&] { io->run(); });
 
-	std::vector<boost::shared_ptr<urlReader>> readers;
+	boost::shared_ptr<connector> c(new connector(io, "www.google.com", 80));
+
+	std::vector<boost::shared_ptr<queryReader>> readers;
 
 	for (int i = 0; i < size; i++)
 	{
-		readers.push_back(boost::shared_ptr<urlReader>(
-			new urlReader(io, "www.google.com", 80, "")));
+		readers.push_back(boost::shared_ptr<queryReader>(
+			new queryReader(c, "")));
 	}
 
 	for (int i = 0; i < size; i++)
 	{
 		auto str = readers[i]->getStream();
 	}
+
+	// exit
+	boost::unique_lock<boost::mutex> lk(m);
+
+	while (!finished) cv.wait(lk);
 
 	work.reset();
 

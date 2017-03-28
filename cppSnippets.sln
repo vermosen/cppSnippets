@@ -112,6 +112,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "urlReader2", "urlReader2\ur
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "urlReader3", "urlReader3\urlReader3.vcxproj", "{B6C5568F-A179-44ED-A401-67199BF82967}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "concurrency", "concurrency", "{0CCBCA03-4BB2-4587-8389-203F0C0ADD28}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asyncConsole", "asyncConsole\asyncConsole.vcxproj", "{97E66423-519E-4519-B456-7AEBE6B90AB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (intel)|x64 = Debug (intel)|x64
@@ -719,6 +723,18 @@ Global
 		{B6C5568F-A179-44ED-A401-67199BF82967}.Release|x64.Build.0 = Release|x64
 		{B6C5568F-A179-44ED-A401-67199BF82967}.Release|x86.ActiveCfg = Release|Win32
 		{B6C5568F-A179-44ED-A401-67199BF82967}.Release|x86.Build.0 = Release|Win32
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug (intel)|x64.ActiveCfg = Debug|x64
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug (intel)|x64.Build.0 = Debug|x64
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug (intel)|x86.ActiveCfg = Debug|Win32
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug (intel)|x86.Build.0 = Debug|Win32
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug|x64.ActiveCfg = Debug|x64
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug|x64.Build.0 = Debug|x64
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug|x86.ActiveCfg = Debug|Win32
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Debug|x86.Build.0 = Debug|Win32
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Release|x64.ActiveCfg = Release|x64
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Release|x64.Build.0 = Release|x64
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Release|x86.ActiveCfg = Release|Win32
+		{97E66423-519E-4519-B456-7AEBE6B90AB6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -755,5 +771,6 @@ Global
 		{CB87FDD9-DB39-45F4-8A46-E289E9BD9ACD} = {71E482B5-7B7B-47E5-84A0-CD8D7CCB7044}
 		{887AA763-B8BC-4547-9BC9-6E26D76F47F5} = {71E482B5-7B7B-47E5-84A0-CD8D7CCB7044}
 		{B6C5568F-A179-44ED-A401-67199BF82967} = {71E482B5-7B7B-47E5-84A0-CD8D7CCB7044}
+		{97E66423-519E-4519-B456-7AEBE6B90AB6} = {0CCBCA03-4BB2-4587-8389-203F0C0ADD28}
 	EndGlobalSection
 EndGlobal
