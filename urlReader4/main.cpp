@@ -8,6 +8,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
+#include "threadUtil.hpp"
+
 // maintains the connection to a host
 class connector : public boost::enable_shared_from_this<connector>
 {
@@ -98,21 +100,10 @@ public:
 
 	void work()	// start the download loop
 	{
-		// initialize and run the service
-		boost::scoped_ptr<boost::asio::io_service::work> work(
-			new boost::asio::io_service::work(io_));
-
-		// runs in a separate thread
-		boost::thread t([&] { io_.run(); });
-
-		// wait for exit
+		// start the runner
+		send();
 		boost::unique_lock<boost::mutex> lk(ioMutex_);
-
 		while (!stop_) condition_.wait(lk);
-
-		work.reset();
-
-		t.join();
 	}
 
 	void send()
@@ -271,8 +262,8 @@ private:
 			else
 			{
 				content_ << &response_;
-				counter_++;
-				this->work();
+				callback_("recieved reply number " + boost::lexical_cast<std::string>(++counter_));
+				if (!stop_) this->send();
 			}
 		}
 		else if (err != boost::asio::error::eof)
@@ -320,7 +311,7 @@ public:
 
 		// runs in a separate thread
 		boost::thread t([&] { io_.run(); });
-
+		setThreadName(t.get_id(), "service runner");
 		auto f = boost::function<void()>(boost::bind(&service::connectWorkers, this));
 
 		// connect
@@ -328,11 +319,8 @@ public:
 
 		// wait for exit
 		boost::unique_lock<boost::mutex> lk(m_);
-
 		while (!finished_) cv_.wait(lk);
-
 		work.reset();
-
 		t.join();
 	}
 
@@ -341,13 +329,16 @@ private:
 	{
 		int size = 1;
 
-		auto f = boost::function<void(const std::string &)>(boost::bind(&service::callback, this));
+		auto f = boost::function<void(const std::string &)>(boost::bind(&service::callback, this, _1));
 
 		for (int i = 0; i < size; i++)
 			workers_.push_back(boost::shared_ptr<worker>(new worker(io_, *connector_, f)));
 
-		for (auto & it : workers_)
+		int i = 0; for (auto & it : workers_)
+		{
 			boost::thread t([&] { it->work(); });
+			setThreadName(t.get_id(), "launcher " + boost::lexical_cast<std::string>(++i));
+		}
 	}
 
 	void callback(const std::string & msg)
