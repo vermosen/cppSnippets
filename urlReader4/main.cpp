@@ -14,30 +14,53 @@
 class connector : public boost::enable_shared_from_this<connector>
 {
 public:
-	connector(	boost::asio::io_service & io, 
-				const std::string & host, int port, 
-				boost::function<void()> callback)
-		: io_		(io			)
-		, socket_	(io			)
-		, resolver_	(io			)
+	connector(	const std::string & host, int port, 
+				boost::function<void()> callback,
+				int workerId)
+		: socket_	(io_		)
+		, resolver_	(io_		)
+		, strand_	(io_		)
 		, host_		(host		)
 		, port_		(port		)
 		, callback_ (callback	)
+		, workerId_(workerId) {}
+
+	~connector() {}
+
+	void connect()
 	{
+		boost::shared_ptr<boost::asio::io_service::work> work(
+			new boost::asio::io_service::work(io_));
+
+		boost::thread t([&] { io_.run(); });
+		setThreadName(t.get_id(), "service runner " + boost::lexical_cast<std::string>(workerId_));
+
 		auto query = boost::shared_ptr<boost::asio::ip::tcp::resolver::query>(
 			new boost::asio::ip::tcp::resolver::query(
 				host_, boost::lexical_cast<std::string>(port_)));
 
-		resolver_.async_resolve(*query, 
-			boost::bind(&connector::handle_resolve, this,
+		resolver_.async_resolve(*query,
+			strand_.wrap(boost::bind(&connector::handle_resolve, shared_from_this(),
 				boost::asio::placeholders::error,
-				boost::asio::placeholders::iterator)); 
+				boost::asio::placeholders::iterator)));
+
+		// wait for exit
+		boost::unique_lock<boost::mutex> lk(m_);
+
+		while (!terminate_) cv_.wait(lk);
+		work.reset();
+		t.join();
 	}
 
-	~connector() {}
+	void disconnect() { terminate_ = true; }
 
-	boost::asio::ip::tcp::socket & socket() { return socket_; }
+	boost::asio::io_service &			service	() { return io_			; }
+	boost::asio::ip::tcp::socket &		socket	() { return socket_		; }
+	boost::asio::strand &				strand	() { return strand_		; }
+	boost::asio::ip::tcp::resolver &	resolver() { return resolver_	; }
+	
 	const std::string & host() const { return host_; }
+	const int port() const { return port_; }
 	bool connected() const { return connected_; }
 
 private:
@@ -47,8 +70,8 @@ private:
 		if (!err)
 		{
 			boost::asio::async_connect(socket_, endpoint_iterator,
-				boost::bind(&connector::handle_connect, this,
-					boost::asio::placeholders::error));
+				strand_.wrap(boost::bind(&connector::handle_connect, shared_from_this(),
+					boost::asio::placeholders::error)));
 		}
 		else
 		{
@@ -75,35 +98,42 @@ private:
 		}
 	}
 
-	boost::asio::io_service & io_;
+	boost::mutex m_;
+	boost::condition_variable cv_;
+	bool terminate_;
+
+	boost::asio::io_service io_;
+	boost::asio::strand	strand_;
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::asio::ip::tcp::socket socket_;
+	
 	boost::function<void()> callback_;
 	bool connected_;
 	std::string host_;
 	int port_;
+	int workerId_;
 };
 
 // cycles through the files
 class worker
 {
 public:
-	worker(boost::asio::io_service & io, connector & cnx, boost::function<void(const std::string &)> & callback,  int timeout = 5000)
-		: io_		(io			)	
-		, cnx_		(cnx		)
-		, strand_	(io			)
-		, timeout_	(timeout	)
-		, stop_		(false		)
-		, callback_ (callback	)
+	worker(const std::string & host, int port, boost::function<void(const std::string &)> & callback, int workerId)
+		: callback_ (callback	)
 		, counter_	(1			) 
-	{}
-
-	void work()	// start the download loop
 	{
-		// start the runner
-		send();
-		boost::unique_lock<boost::mutex> lk(ioMutex_);
-		while (!stop_) condition_.wait(lk);
+		cnx_ = boost::shared_ptr<connector>(new connector(host, port,
+			boost::function<void()>(boost::bind(&worker::send, this)), workerId));
+	}
+
+	void work()
+	{
+		cnx_->connect();
+	}
+
+	void interrupt()
+	{
+		
 	}
 
 	void send()
@@ -114,14 +144,14 @@ public:
 		std::ostream request_stream(&request);
 		request_stream << "GET /" << "" /* put the path here */;
 		request_stream << " HTTP/1.1\r\n";
-		request_stream << "Host: " << cnx_.host() << "\r\n";
+		request_stream << "Host: " << cnx_->host() << "\r\n";
 		request_stream << "Accept: */*\r\n";
 		request_stream << "Connection: close\r\n\r\n";
 
-		if (cnx_.connected())
+		if (cnx_->connected())
 		{
-			boost::asio::async_write(cnx_.socket(), request,
-				strand_.wrap(boost::bind(&worker::handle_write_request, this,
+			boost::asio::async_write(cnx_->socket(), request,
+				cnx_->strand().wrap(boost::bind(&worker::handle_write_request, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -129,12 +159,12 @@ public:
 
 private:
 	// client callbacks
-	void worker::handle_write_request(const boost::system::error_code& err, size_t bytes_transferred)
+	void worker::handle_write_request	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
-			boost::asio::async_read_until(cnx_.socket(), response_, "\r\n",
-				strand_.wrap(boost::bind(&worker::handle_read_status_line, this,
+			boost::asio::async_read_until(cnx_->socket(), response_, "\r\n",
+				cnx_->strand().wrap(boost::bind(&worker::handle_read_status_line, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -166,16 +196,16 @@ private:
 			if (status_code == 200)
 			{
 				// Read the response headers, which are terminated by a blank line.
-				boost::asio::async_read_until(cnx_.socket(), response_, "\r\n\r\n",
-					strand_.wrap(boost::bind(&worker::handle_read_headers, this,
+				boost::asio::async_read_until(cnx_->socket(), response_, "\r\n\r\n",
+					cnx_->strand().wrap(boost::bind(&worker::handle_read_headers, this,
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred)));
 			}
 			else if (status_code == 302)							// redirection
 			{
 				// Read the response headers, which are terminated by a blank line.
-				boost::asio::async_read_until(cnx_.socket(), response_, "\r\n\r\n",
-					strand_.wrap(boost::bind(&worker::handle_redirection, this,
+				boost::asio::async_read_until(cnx_->socket(), response_, "\r\n\r\n",
+					cnx_->strand().wrap(boost::bind(&worker::handle_redirection, this,
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred)));
 			}
@@ -191,7 +221,7 @@ private:
 			stop_ = true; condition_.notify_one();
 		}
 	}
-	void worker::handle_redirection(const boost::system::error_code& err, size_t bytes_transferred)
+	void worker::handle_redirection		(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -212,7 +242,7 @@ private:
 			stop_ = true; condition_.notify_one();
 		}
 	}
-	void worker::handle_read_headers(const boost::system::error_code& err, size_t bytes_transferred)
+	void worker::handle_read_headers	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -230,9 +260,9 @@ private:
 			}
 
 			// Start reading remaining data until EOF.
-			boost::asio::async_read(cnx_.socket(), response_,
+			boost::asio::async_read(cnx_->socket(), response_,
 				boost::asio::transfer_at_least(1),
-				strand_.wrap(boost::bind(&worker::handle_read_content, this,
+				cnx_->strand().wrap(boost::bind(&worker::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -241,15 +271,14 @@ private:
 			stop_ = true; condition_.notify_one();
 		}
 	}
-
-	void worker::handle_read_content(const boost::system::error_code& err, size_t bytes_transferred)
+	void worker::handle_read_content	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
 			// Continue reading remaining data until EOF.
-			boost::asio::async_read(cnx_.socket(), response_,
+			boost::asio::async_read(cnx_->socket(), response_,
 				boost::asio::transfer_at_least(1),
-				strand_.wrap(boost::bind(&worker::handle_read_content, this,
+				cnx_->strand().wrap(boost::bind(&worker::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -273,9 +302,8 @@ private:
 	}
 
 private:
-	connector & cnx_;
-	boost::asio::strand strand_;
-	boost::asio::io_service & io_;
+	boost::shared_ptr<connector> cnx_;
+
 	boost::function<void(const std::string &)> & callback_;
 
 	std::stringstream content_;
@@ -300,64 +328,42 @@ private:
 class service
 {
 public:
-	service()
-		: io_() {}
-
-	void run()
+	service(int nWorker)
 	{
-		// initialize and run the service
-		boost::scoped_ptr<boost::asio::io_service::work> work(
-			new boost::asio::io_service::work(io_));
+		auto f = boost::function<void(const std::string &)>(
+			boost::bind(&service::callback, this, _1));
 
-		// runs in a separate thread
-		boost::thread t([&] { io_.run(); });
-		setThreadName(t.get_id(), "service runner");
-		auto f = boost::function<void()>(boost::bind(&service::connectWorkers, this));
+		for (int i = 0; i < nWorker; i++)
+			workers_.push_back(boost::unique_ptr<worker>(
+				new worker("www.google.com", 80, f, i)));
+	}
 
-		// connect
-		connector_ = boost::shared_ptr<connector>(new connector(io_, "www.google.com", 80, f));
-
-		// wait for exit
-		boost::unique_lock<boost::mutex> lk(m_);
-		while (!finished_) cv_.wait(lk);
-		work.reset();
-		t.join();
+	void start() 
+	{
+		std::for_each(workers_.begin(), workers_.end(),
+			[](auto & w) { w->work(); });
+	}
+	void stop()
+	{
+		std::for_each(workers_.begin(), workers_.end(),
+			[](auto & w) { w->interrupt(); });
 	}
 
 private:
-	void connectWorkers()
-	{
-		int size = 1;
-
-		auto f = boost::function<void(const std::string &)>(boost::bind(&service::callback, this, _1));
-
-		for (int i = 0; i < size; i++)
-			workers_.push_back(boost::shared_ptr<worker>(new worker(io_, *connector_, f)));
-
-		int i = 0; for (auto & it : workers_)
-		{
-			boost::thread t([&] { it->work(); });
-			setThreadName(t.get_id(), "launcher " + boost::lexical_cast<std::string>(++i));
-		}
-	}
-
 	void callback(const std::string & msg)
 	{
 		// write in the database
 		std::cout << "this is a message: " << msg << std::endl;
 	}
 
-	boost::asio::io_service io_;
-	boost::shared_ptr<connector> connector_;
-	std::vector<boost::shared_ptr<worker>> workers_;
-
-	bool finished_ = false;
-	boost::mutex m_;
-	boost::condition_variable cv_;
+	std::vector<boost::unique_ptr<worker>> workers_;
 };
 
 int main()
 {
-	service().run();
+	service srv(1);
+	srv.start();
+	boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
+	srv.stop();
 	return 0;
 }

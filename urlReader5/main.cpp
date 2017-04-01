@@ -7,15 +7,20 @@
 #include <boost/atomic.hpp>
 #include <boost/scoped_ptr.hpp>
 
+typedef boost::function<void(const std::string &)> writeDelegate;
+typedef boost::function<void(bool)> connectionDelegate;
+
 class urlReader
 {
 public:
+	urlReader(boost::shared_ptr<boost::asio::io_service> io, writeDelegate dlg)
+		: resolver_	(*io)
+		, socket_	(*io)
+		, strand_	(*io)
+		, answered_	(false)
+		, dlg_		(dlg) {}
 
-	urlReader(boost::shared_ptr<boost::asio::io_service> io, const std::string & host, int port, const std::string & path)
-		: resolver_(*io)
-		, socket_(*io)
-		, strand_(*io)
-		, answered_(false)
+	void connect(const std::string & host, int port, const std::string & path)
 	{
 		auto query = boost::shared_ptr<boost::asio::ip::tcp::resolver::query>(
 			new boost::asio::ip::tcp::resolver::query(
@@ -36,7 +41,7 @@ public:
 				boost::asio::placeholders::iterator)));
 	}
 
-	std::string urlReader::getStream()
+	void urlReader::getStream()
 	{
 		if (!answered_)
 		{
@@ -52,7 +57,7 @@ public:
 			}
 		}
 
-		return content_.str();
+		dlg_(content_.str());
 	}
 
 private:
@@ -85,7 +90,8 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_write_request(const boost::system::error_code& err, size_t bytes_transferred)
+
+	void urlReader::handle_write_request	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -99,7 +105,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_read_status_line(const boost::system::error_code& err, size_t bytes_transferred)
+	void urlReader::handle_read_status_line	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -146,7 +152,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_redirection(const boost::system::error_code& err, size_t bytes_transferred)
+	void urlReader::handle_redirection		(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -167,7 +173,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_read_headers(const boost::system::error_code& err, size_t bytes_transferred)
+	void urlReader::handle_read_headers		(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -180,7 +186,6 @@ private:
 			{
 				// TODO: use regex for the space
 				if (h.find("transfer-encoding: chunked") != std::string::npos) chunked_ = true;
-				std::cout << h << std::endl;
 				header_ << h;
 			}
 
@@ -196,7 +201,7 @@ private:
 			answered_ = true; condition_.notify_one();
 		}
 	}
-	void urlReader::handle_read_content(const boost::system::error_code& err, size_t bytes_transferred)
+	void urlReader::handle_read_content		(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -212,6 +217,7 @@ private:
 			if (chunked_)
 			{
 				// unchunked here
+				
 			}
 			else
 			{
@@ -227,6 +233,7 @@ private:
 	}
 
 private:
+	writeDelegate dlg_;
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
@@ -250,40 +257,83 @@ private:
 	boost::atomic<bool> 		answered_;
 };
 
-void run()
+class worker
 {
-	// initialize and run the service
-	boost::shared_ptr<boost::asio::io_service> io(
-		new boost::asio::io_service);
-
-	boost::scoped_ptr<boost::asio::io_service::work> work(
-		new boost::asio::io_service::work(*io));
-
-	// runs in a separate thread
-	boost::thread t1([&] { io->run(); });
-
-	boost::shared_ptr<urlReader> reader(new urlReader(io, "www.google.com", 80, ""));
-
-	auto str = reader->getStream();
+public:
+	worker(writeDelegate callback)
+		: callback_(callback)
+		, counter_(1) 
+	{
 	
-	work.reset();
+	}
 
-	t1.join();
-}
+	~worker() {};
+	void work()
+	{
+		// initialize and run the service
+		boost::shared_ptr<boost::asio::io_service> io(
+			new boost::asio::io_service);
 
-// multithreaded version of urlReader1
+		boost::unique_ptr<boost::asio::io_service::work> ioTask = boost::unique_ptr<boost::asio::io_service::work>(new boost::asio::io_service::work(*io));
+
+		// runs in a separate thread
+		boost::thread t1([&] { io->run(); });
+
+		boost::shared_ptr<urlReader> reader(new urlReader(io, callback_));
+		reader->connect("www.google.com", 80, "");
+
+		reader->getStream();
+
+		ioTask.reset();
+
+		t1.join();
+	}
+private:
+	writeDelegate callback_;
+	int counter_;
+};
+
+class service 
+{
+public:
+	class writer
+	{
+	public:
+		void write(const std::string & s)
+		{
+			boost::mutex::scoped_lock lock(m_);
+			std::cout << s << std::endl;
+		};
+	private:
+		boost::mutex m_;
+	};
+
+	service(int n) : n_(n) {}
+
+	void start()
+	{
+		writeDelegate f(boost::bind(&writer::write, &w_, _1));
+
+		for (int i = 0; i < n_; i++)
+		{
+			boost::shared_ptr<worker> w(new worker(f));
+			threadPool_.push_back(boost::shared_ptr<boost::thread>(new boost::thread([&w] { w->work(); })));
+			workers_.push_back(w);
+		}
+
+		for (auto & i : threadPool_) i->join();
+	}
+private:
+
+	writer w_;
+	std::vector<boost::shared_ptr<worker>> workers_;
+	std::vector<boost::shared_ptr<boost::thread>> threadPool_;
+	int n_;
+};
+ 
 int main()
 {
-	int size = 3;
-	
-	std::vector<boost::shared_ptr<boost::thread>> threadPool;
-
-	for (int i = 0; i < size; i++)
-	{
-		threadPool.push_back(boost::shared_ptr<boost::thread>(new boost::thread([] { run(); })));
-	}
-		
-	for (auto & i : threadPool) i->join();
-
+	service srv(2);
+	srv.start();
 	return 0;
 }
