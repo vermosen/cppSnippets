@@ -250,11 +250,8 @@ private:
 	boost::atomic<bool> 		answered_;
 };
 
-// multithreaded version of urlReader1
-int main()
+void run()
 {
-	int size = 10;
-
 	// initialize and run the service
 	boost::shared_ptr<boost::asio::io_service> io(
 		new boost::asio::io_service);
@@ -263,24 +260,27 @@ int main()
 		new boost::asio::io_service::work(*io));
 
 	// runs in a separate thread
-	boost::thread t([&] { io->run(); });
+	boost::thread t1([&] { io->run(); });
 
-	std::vector<boost::shared_ptr<urlReader>> readers;
+	boost::shared_ptr<urlReader> reader(new urlReader(io, "www.google.com", 80, ""));
 
-	for(int i = 0; i < size; i++)
-	{
-		readers.push_back(boost::shared_ptr<urlReader>(
-			new urlReader(io, "www.google.com", 80, "")));
-	}
-
-	for (int i = 0; i < size; i++)
-	{
-		auto str = readers[i]->getStream();
-	}
-
+	auto str = reader->getStream();
+	
 	work.reset();
 
-	t.join();
+	t1.join();
+}
+// multithreaded version of urlReader1
+int main()
+{
+	int size = 3;
+	
+	for (int i = 0; i < size; i++)
+	{
+		boost::thread t([] { run(); });
+	}
+		
+	boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
 
 	return 0;
 }
