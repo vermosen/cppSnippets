@@ -13,16 +13,16 @@
 #include "connection.hpp"
 
 typedef boost::function<void(const std::string &)> writeDelegate;
+typedef boost::function<void(const std::string &, bool)> urlReadDelegate;
 
 class urlReader
 {
 public:
-
-	urlReader(boost::shared_ptr<connection> cnx, writeDelegate write)
+	urlReader(boost::shared_ptr<connection> cnx, urlReadDelegate write)
 		: cnx_	(cnx)
 		, write_(write	) {}
 
-	void urlReader::getStream(const std::string & path)
+	void urlReader::getAsync(const std::string & path)
 	{
 		// build the query
 		std::ostream request_stream(&request_);
@@ -30,7 +30,7 @@ public:
 		request_stream << path;
 		request_stream << " HTTP/1.1\r\n";
 		request_stream << "Host: " << cnx_->host() << "\r\n";
-		request_stream << "Accept: */*\r\n";
+		request_stream << "Accept: */*\r\n\r\n";
 		request_stream << "Connection: close\r\n\r\n";
 
 		boost::asio::async_write(cnx_->socket(), request_,
@@ -52,7 +52,7 @@ private:
 		}
 		else
 		{
-
+			write_("", false);
 		}
 	}
 	void urlReader::handle_read_status_line	(const boost::system::error_code& err, size_t bytes_transferred)
@@ -71,7 +71,7 @@ private:
 			std::getline(response_stream, status_message);
 			if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 			{
-				return;
+				write_("", false);
 			}
 
 			if (status_code == 200)
@@ -92,12 +92,12 @@ private:
 			}
 			else
 			{
-				return;
+				write_("", false);
 			}
 		}
 		else
 		{
-
+			write_("", false);
 		}
 	}
 	void urlReader::handle_redirection		(const boost::system::error_code& err, size_t bytes_transferred)
@@ -116,7 +116,7 @@ private:
 		}
 		else
 		{
-
+			write_("", false);
 		}
 	}
 	void urlReader::handle_read_headers		(const boost::system::error_code& err, size_t bytes_transferred)
@@ -144,7 +144,7 @@ private:
 		}
 		else
 		{
-
+			write_("", false);
 		}
 	}
 	void urlReader::handle_read_content		(const boost::system::error_code& err, size_t bytes_transferred)
@@ -158,19 +158,19 @@ private:
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
-		else if (err == boost::asio::error::eof)
+		else if (err == boost::asio::error::eof)	// connection has been closed
 		{
 			content_ << &response_;
-			write_(content_.str());
+			write_(content_.str(), true);
 		}
 		else if (err != boost::asio::error::eof)
 		{
-
+			write_("", false);
 		}
 	}
 
 private:
-	writeDelegate write_;
+	urlReadDelegate write_;
 	boost::shared_ptr<connection> cnx_;
 
 	std::string host_;
@@ -228,9 +228,11 @@ private:
 	{
 		if (result == true)
 		{
-			reader_ = boost::shared_ptr<urlReader>(new urlReader(cnx_, write_));
-			write_("connection successfull");
-			reader_->getStream("");
+			write_("host " + cnx_->host() + " successfully reached");
+
+			reader_ = boost::shared_ptr<urlReader>(new urlReader(cnx_,
+				urlReadDelegate(boost::bind(&worker::reader_callback, this, _1, _2))));
+			reader_->getAsync("");
 		}
 		else // abort or retry ?
 		{
@@ -238,10 +240,21 @@ private:
 		}
 	}
 
-	void mainLoop()
+	void reader_callback(const std::string & msg, bool result)
 	{
-		
+		if (result)
+		{
+			counter_++;
+			write_("successfully retrieved: " + msg);
+			reader_->getAsync("");
+		}
+		else
+		{
+			write_("cannot connect to host...");
+		}
 	}
+
+	// void error_callback() // TODO
 
 	std::unique_ptr<boost::thread> t_;
 	boost::condition_variable cv_;
@@ -296,15 +309,13 @@ public:
 	}
 
 private:
-
-	writer w_;
 	std::vector<boost::shared_ptr<worker>> workers_;
-	int n_;
+	writer w_; int n_;
 };
  
 int main()
 {
-	service srv(3);
+	service srv(1);
 	srv.start();
 	boost::this_thread::sleep(boost::posix_time::milliseconds(10000));
 	srv.stop();
