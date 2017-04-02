@@ -7,33 +7,28 @@
 #include <boost/atomic.hpp>
 #include <boost/scoped_ptr.hpp>
 
+#include "threadUtil.hpp"
+
 typedef boost::function<void(const std::string &)> writeDelegate;
 typedef boost::function<void(bool)> connectionDelegate;
 
 class urlReader
 {
 public:
-	urlReader(boost::shared_ptr<boost::asio::io_service> io, writeDelegate dlg)
+	urlReader(boost::shared_ptr<boost::asio::io_service> io, writeDelegate write, connectionDelegate cnx)
 		: resolver_	(*io)
 		, socket_	(*io)
 		, strand_	(*io)
-		, answered_	(false)
-		, dlg_		(dlg) {}
+		, write_	(write)
+		, cnx_		(cnx) {}
 
-	void connect(const std::string & host, int port, const std::string & path)
+	void connect(const std::string & host, int port)
 	{
+		host_ = host; port_ = port;
+
 		auto query = boost::shared_ptr<boost::asio::ip::tcp::resolver::query>(
 			new boost::asio::ip::tcp::resolver::query(
-				host, boost::lexical_cast<std::string>(port)));
-
-		// build the query
-		std::ostream request_stream(&request_);
-		request_stream << "GET /";
-		request_stream << path;
-		request_stream << " HTTP/1.1\r\n";
-		request_stream << "Host: " << host << "\r\n";
-		request_stream << "Accept: */*\r\n";
-		request_stream << "Connection: close\r\n\r\n";
+				host_, boost::lexical_cast<std::string>(port)));
 
 		resolver_.async_resolve(*query, strand_.wrap(
 			boost::bind(&urlReader::handle_resolve, this,
@@ -41,23 +36,21 @@ public:
 				boost::asio::placeholders::iterator)));
 	}
 
-	void urlReader::getStream()
+	void urlReader::getStream(const std::string & path)
 	{
-		if (!answered_)
-		{
-			boost::chrono::high_resolution_clock timer;
-			boost::chrono::time_point<boost::chrono::high_resolution_clock> start = timer.now();
-			boost::mutex::scoped_lock lock(ioMutex_);
+		// build the query
+		std::ostream request_stream(&request_);
+		request_stream << "GET /";
+		request_stream << path;
+		request_stream << " HTTP/1.1\r\n";
+		request_stream << "Host: " << host_ << "\r\n";
+		request_stream << "Accept: */*\r\n";
+		request_stream << "Connection: close\r\n\r\n";
 
-			// should be useless...
-			while (!answered_ && boost::chrono::duration_cast<boost::chrono::milliseconds>(
-				timer.now() - start).count() < 10000)
-			{
-				condition_.wait(lock);
-			}
-		}
-
-		dlg_(content_.str());
+		boost::asio::async_write(socket_, request_,
+			strand_.wrap(boost::bind(&urlReader::handle_write_request, this,
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred)));
 	}
 
 private:
@@ -73,21 +66,20 @@ private:
 		}
 		else
 		{
-			answered_ = true; condition_.notify_one();
+			// TODO: error handler
+			cnx_(false);
 		}
 	}
 	void urlReader::handle_connect(const boost::system::error_code& err)
 	{
 		if (!err)
 		{
-			boost::asio::async_write(socket_, request_,
-				strand_.wrap(boost::bind(&urlReader::handle_write_request, this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)));
+			cnx_(true);			
 		}
 		else
 		{
-			answered_ = true; condition_.notify_one();
+			// TODO: error handler
+			cnx_(false);
 		}
 	}
 
@@ -102,7 +94,7 @@ private:
 		}
 		else
 		{
-			answered_ = true; condition_.notify_one();
+
 		}
 	}
 	void urlReader::handle_read_status_line	(const boost::system::error_code& err, size_t bytes_transferred)
@@ -121,7 +113,6 @@ private:
 			std::getline(response_stream, status_message);
 			if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 			{
-				answered_ = true; condition_.notify_one();
 				return;
 			}
 
@@ -143,13 +134,12 @@ private:
 			}
 			else
 			{
-				answered_ = true; condition_.notify_one();
 				return;
 			}
 		}
 		else
 		{
-			answered_ = true; condition_.notify_one();
+
 		}
 	}
 	void urlReader::handle_redirection		(const boost::system::error_code& err, size_t bytes_transferred)
@@ -165,12 +155,10 @@ private:
 			{
 				std::cout << h << std::endl;
 			}
-
-			answered_ = false; condition_.notify_one();
 		}
 		else
 		{
-			answered_ = true; condition_.notify_one();
+
 		}
 	}
 	void urlReader::handle_read_headers		(const boost::system::error_code& err, size_t bytes_transferred)
@@ -198,7 +186,7 @@ private:
 		}
 		else
 		{
-			answered_ = true; condition_.notify_one();
+
 		}
 	}
 	void urlReader::handle_read_content		(const boost::system::error_code& err, size_t bytes_transferred)
@@ -214,29 +202,25 @@ private:
 		}
 		else if (err == boost::asio::error::eof)
 		{
-			if (chunked_)
-			{
-				// unchunked here
-				
-			}
-			else
-			{
-				content_ << &response_;
-			}
-
-			success_ = true; answered_ = true; condition_.notify_one();
+			content_ << &response_;
+			write_(content_.str());
 		}
 		else if (err != boost::asio::error::eof)
 		{
-			answered_ = true; condition_.notify_one();
+
 		}
 	}
 
 private:
-	writeDelegate dlg_;
+	writeDelegate write_;
+	connectionDelegate cnx_;
+
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
+
+	std::string host_;
+	int port_;
 
 	std::stringstream content_;
 	std::stringstream header_;
@@ -250,46 +234,64 @@ private:
 	// for chucks management
 	bool chunked_;
 	int chunckSize_;
-
-	// for async controls
-	boost::mutex 				ioMutex_;
-	boost::condition_variable 	condition_;
-	boost::atomic<bool> 		answered_;
 };
 
 class worker
 {
 public:
-	worker(writeDelegate callback)
-		: callback_(callback)
+	worker(writeDelegate write)
+		: write_(write)
 		, counter_(1) 
 	{
-	
+		io_ = boost::shared_ptr<boost::asio::io_service>(new boost::asio::io_service);
 	}
 
-	~worker() {};
+	~worker() { io_.reset(); };
+
 	void work()
 	{
 		// initialize and run the service
-		boost::shared_ptr<boost::asio::io_service> io(
-			new boost::asio::io_service);
-
-		boost::unique_ptr<boost::asio::io_service::work> ioTask = boost::unique_ptr<boost::asio::io_service::work>(new boost::asio::io_service::work(*io));
+		ioTask_ = boost::shared_ptr<boost::asio::io_service::work>(new boost::asio::io_service::work(*io_));
 
 		// runs in a separate thread
-		boost::thread t1([&] { io->run(); });
+		t_ = boost::unique_ptr<boost::thread>(new boost::thread([&] { io_->run(); }));
+		setThreadName(t_->get_id(), "io runner");
 
-		boost::shared_ptr<urlReader> reader(new urlReader(io, callback_));
-		reader->connect("www.google.com", 80, "");
+		connectionDelegate c(boost::bind(&worker::connect_callback, this, _1));
 
-		reader->getStream();
+		reader_ = boost::shared_ptr<urlReader>(new urlReader(io_, write_, c));
+		reader_->connect("www.google.com", 80);
 
-		ioTask.reset();
-
-		t1.join();
+		// barrier
+		boost::unique_lock<boost::mutex> lk(m_);
+		while (!terminate_) cv_.wait(lk);
+		ioTask_.reset();
+		t_->join();
 	}
+
+	void connect_callback(bool result)
+	{
+		if (result == true)
+		{
+			write_("connection successfull");
+			reader_->getStream("");
+		}
+		else
+		{
+			write_("error");
+		}
+	}
+
 private:
-	writeDelegate callback_;
+	boost::unique_ptr<boost::thread> t_;	
+	boost::condition_variable cv_;
+	bool terminate_;
+	boost::mutex m_;
+
+	boost::shared_ptr<boost::asio::io_service> io_;
+	boost::shared_ptr<boost::asio::io_service::work> ioTask_;
+	boost::shared_ptr<urlReader> reader_;
+	writeDelegate write_;
 	int counter_;
 };
 
@@ -314,11 +316,13 @@ public:
 	{
 		writeDelegate f(boost::bind(&writer::write, &w_, _1));
 
+		workers_.resize(n_);
+		threadPool_.resize(n_);
+
 		for (int i = 0; i < n_; i++)
 		{
-			boost::shared_ptr<worker> w(new worker(f));
-			threadPool_.push_back(boost::shared_ptr<boost::thread>(new boost::thread([&w] { w->work(); })));
-			workers_.push_back(w);
+			workers_[i] = boost::shared_ptr<worker>(new worker(f));
+			threadPool_[i] = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&worker::work, workers_[i])));
 		}
 
 		for (auto & i : threadPool_) i->join();
@@ -333,7 +337,7 @@ private:
  
 int main()
 {
-	service srv(2);
+	service srv(100);
 	srv.start();
 	return 0;
 }
