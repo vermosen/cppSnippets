@@ -7,42 +7,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 #include <boost/atomic.hpp>
-//#include <boost/scoped_ptr.hpp>
 #include <boost/move/unique_ptr.hpp>
 
 #include "threadUtil.hpp"
-
+#include "workerImpl.hpp"
 typedef boost::function<void(const std::string &)> writeDelegate;
 typedef boost::function<void(bool)> connectionDelegate;
-
-template <typename W>
-class workerImpl
-{
-protected:
-	workerImpl(const std::string & name)
-	: name_(name) {}
-	virtual ~workerImpl() { /* interrupt ?*/ };
-
-public:
-	void start()
-	{
-		if (!t_)
-		{
-			t_ = std::move(std::unique_ptr<boost::thread>(new boost::thread(
-				[&]() { static_cast<W*>(this)->work(); })));
-			setThreadName(t_->get_id(), name_);
-		}
-	}
-
-	void join() 
-	{ 
-		if(t_) t_->join(); 
-	}
-
-private:
-	std::string name_;
-	std::unique_ptr<boost::thread> t_;
-};
 
 class urlReader
 {
@@ -353,11 +323,11 @@ public:
 
 		for (int i = 0; i < n_; i++)
 		{
-			workers_[i] = boost::shared_ptr<worker>(new worker(f));
+			std::string id = boost::lexical_cast<std::string>(i);
+			workers_[i] = boost::shared_ptr<worker>(new worker(f, "worker " + id));
 		}
 		
 		for (auto & i : workers_) i->start();
-
 		for (auto & i : workers_) i->join();
 	}
 private:
