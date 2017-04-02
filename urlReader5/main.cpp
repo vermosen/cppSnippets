@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
@@ -5,12 +7,42 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 #include <boost/atomic.hpp>
-#include <boost/scoped_ptr.hpp>
+//#include <boost/scoped_ptr.hpp>
+#include <boost/move/unique_ptr.hpp>
 
 #include "threadUtil.hpp"
 
 typedef boost::function<void(const std::string &)> writeDelegate;
 typedef boost::function<void(bool)> connectionDelegate;
+
+template <typename W>
+class workerImpl
+{
+protected:
+	workerImpl(const std::string & name)
+	: name_(name) {}
+	virtual ~workerImpl() { /* interrupt ?*/ };
+
+public:
+	void start()
+	{
+		if (!t_)
+		{
+			t_ = std::move(std::unique_ptr<boost::thread>(new boost::thread(
+				[&]() { static_cast<W*>(this)->work(); })));
+			setThreadName(t_->get_id(), name_);
+		}
+	}
+
+	void join() 
+	{ 
+		if(t_) t_->join(); 
+	}
+
+private:
+	std::string name_;
+	std::unique_ptr<boost::thread> t_;
+};
 
 class urlReader
 {
@@ -236,12 +268,13 @@ private:
 	int chunckSize_;
 };
 
-class worker
+class worker : public workerImpl<worker>
 {
 public:
-	worker(writeDelegate write)
-		: write_(write)
-		, counter_(1) 
+	worker(writeDelegate write, const std::string name = "worker")
+		: workerImpl(name)
+		, write_(write)
+		, counter_(1)
 	{
 		io_ = boost::shared_ptr<boost::asio::io_service>(new boost::asio::io_service);
 	}
@@ -269,6 +302,7 @@ public:
 		t_->join();
 	}
 
+private:
 	void connect_callback(bool result)
 	{
 		if (result == true)
@@ -282,7 +316,6 @@ public:
 		}
 	}
 
-private:
 	boost::unique_ptr<boost::thread> t_;	
 	boost::condition_variable cv_;
 	bool terminate_;
@@ -317,27 +350,26 @@ public:
 		writeDelegate f(boost::bind(&writer::write, &w_, _1));
 
 		workers_.resize(n_);
-		threadPool_.resize(n_);
 
 		for (int i = 0; i < n_; i++)
 		{
 			workers_[i] = boost::shared_ptr<worker>(new worker(f));
-			threadPool_[i] = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&worker::work, workers_[i])));
 		}
+		
+		for (auto & i : workers_) i->start();
 
-		for (auto & i : threadPool_) i->join();
+		for (auto & i : workers_) i->join();
 	}
 private:
 
 	writer w_;
 	std::vector<boost::shared_ptr<worker>> workers_;
-	std::vector<boost::shared_ptr<boost::thread>> threadPool_;
 	int n_;
 };
  
 int main()
 {
-	service srv(100);
+	service srv(3 );
 	srv.start();
 	return 0;
 }
