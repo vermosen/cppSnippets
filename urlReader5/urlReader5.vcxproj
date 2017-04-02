@@ -149,6 +149,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="connection.hpp" />
     <ClInclude Include="threadUtil.hpp" />
     <ClInclude Include="workerImpl.hpp" />
   </ItemGroup>
