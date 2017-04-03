@@ -10,7 +10,8 @@
 
 #include "threadUtil.hpp"
 #include "workerImpl.hpp"
-#include "connection.hpp"
+#include "connections/http.hpp"
+#include "connections/https.hpp"
 
 typedef boost::function<void(const std::string &)> writeDelegate;
 typedef boost::function<void(const std::string &, bool)> urlReadDelegate;
@@ -31,7 +32,7 @@ public:
 		request_stream << " HTTP/1.1\r\n";
 		request_stream << "Host: " << cnx_->host() << "\r\n";
 		request_stream << "Accept: */*\r\n\r\n";
-		request_stream << "Connection: close\r\n\r\n";
+		//request_stream << "Connection: close\r\n\r\n";
 
 		boost::asio::async_write(cnx_->socket(), request_,
 			cnx_->strand().wrap(boost::bind(&urlReader::handle_write_request, this,
@@ -42,7 +43,7 @@ public:
 private:
 	// client callbacks
 	void urlReader::handle_write_request	(const boost::system::error_code& err, size_t bytes_transferred)
-	{
+	{ 
 		if (!err)
 		{
 			boost::asio::async_read_until(cnx_->socket(), response_, "\r\n",
@@ -132,6 +133,7 @@ private:
 			{
 				// TODO: use regex for the space
 				if (h.find("transfer-encoding: chunked") != std::string::npos) chunked_ = true;
+				if (h.find("Content-Length: ") != std::string::npos) transfert_ = 0; //TODO: use regex
 				header_ << h;
 			}
 
@@ -188,6 +190,7 @@ private:
 	// for chucks management
 	bool chunked_;
 	int chunckSize_;
+	size_t transfert_;
 };
 
 class worker : public workerImpl<worker>
@@ -212,9 +215,9 @@ public:
 		t_ = std::unique_ptr<boost::thread>(new boost::thread([&] { io_->run(); }));
 		setThreadName(t_->get_id(), "io runner");
 
-		cnx_ = boost::shared_ptr<connection>(new connection(io_,
-			connectionDelegate(boost::bind(&worker::connect_callback, this, _1))));
-		cnx_->connect("www.google.com", 80);
+		cnx_ = boost::shared_ptr<connection>(new https(io_,
+			connectionDelegate(boost::bind(&worker::connect_callback, this, _1)), true));
+		cnx_->connect("kgc0418-tdw-data-0.s3.amazonaws.com", 80);
 
 		// barrier
 		boost::unique_lock<boost::mutex> lk(m_);
@@ -232,7 +235,7 @@ private:
 
 			reader_ = boost::shared_ptr<urlReader>(new urlReader(cnx_,
 				urlReadDelegate(boost::bind(&worker::reader_callback, this, _1, _2))));
-			reader_->getAsync("");
+			reader_->getAsync("slices/SLICE_COMMODITIES_2017_04_03_129.zip");
 		}
 		else // abort or retry ?
 		{

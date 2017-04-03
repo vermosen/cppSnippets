@@ -17,48 +17,18 @@ public:
 		: io_(io)
 		, st_(*io_)
 		, cnx_(cnx)
-		, socket_(*io_)
 		, resolver_(*io_) {}
 
-	void connect(const std::string & host, int port)
-	{
-		host_ = host; port_ = port;
-
-		auto query = boost::shared_ptr<boost::asio::ip::tcp::resolver::query>(
-			new boost::asio::ip::tcp::resolver::query(
-				host_, boost::lexical_cast<std::string>(port)));
-
-		resolver_.async_resolve(*query, st_.wrap(
-			boost::bind(&connection::handle_resolve, this,
-				boost::asio::placeholders::error,
-				boost::asio::placeholders::iterator)));
-	}
+	virtual void connect(const std::string & host, int port) = 0;
+	virtual boost::asio::ip::tcp::socket & socket() = 0;
 
 	// accessors
 	const std::string & host() const { return host_; }
 	int port() const { return port_; }
 
 	boost::shared_ptr<boost::asio::io_service>	io_service() { return io_; };
-
 	boost::asio::strand	&			strand() { return st_; };
-	boost::asio::ip::tcp::socket &	socket() { return socket_; };
 
-private:
-	void handle_resolve(const boost::system::error_code& err,
-		boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
-	{
-		if (!err)
-		{
-			boost::asio::async_connect(socket_.lowest_layer(), endpoint_iterator,
-				st_.wrap(boost::bind(&connection::handle_connect, this,
-					boost::asio::placeholders::error)));
-		}
-		else
-		{
-			// TODO: error handler
-			cnx_(false);
-		}
-	}
 	void handle_connect(const boost::system::error_code& err)
 	{
 		if (!err)
@@ -72,14 +42,13 @@ private:
 		}
 	}
 
+protected:
 	boost::shared_ptr<boost::asio::io_service> io_;
 
 	boost::asio::strand st_;
 	boost::asio::ip::tcp::resolver resolver_;
-	boost::asio::ip::tcp::socket socket_;
 
 	connectionDelegate cnx_;
-
 	std::string host_;
 	int port_;
 };
