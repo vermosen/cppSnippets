@@ -16,7 +16,7 @@ typedef struct THREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-void _setThreadName(DWORD threadId, const char* threadName) 
+inline void _setThreadName(DWORD threadId, const char* threadName) 
 {
 	THREADNAME_INFO info;
 
@@ -34,7 +34,7 @@ void _setThreadName(DWORD threadId, const char* threadName)
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER) {}
 }
-void setThreadName(boost::thread::id threadId, std::string name) 
+inline void setThreadName(boost::thread::id threadId, std::string name) 
 {
 	// convert string to char*
 	const char* cchar = name.c_str();

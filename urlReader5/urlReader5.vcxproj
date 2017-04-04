@@ -152,11 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="reader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.hpp" />
     <ClInclude Include="connections\http.hpp" />
     <ClInclude Include="connections\https.hpp" />
+    <ClInclude Include="reader.hpp" />
     <ClInclude Include="threadUtil.hpp" />
     <ClInclude Include="workerImpl.hpp" />
   </ItemGroup>
