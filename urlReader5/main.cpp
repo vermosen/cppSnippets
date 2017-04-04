@@ -1,4 +1,6 @@
 #include <memory>
+#include <array>
+#include <utility>
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -7,6 +9,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 #include <boost/atomic.hpp>
+#include <boost/regex.hpp>
 
 #include "threadUtil.hpp"
 #include "workerImpl.hpp"
@@ -16,14 +19,14 @@
 typedef boost::function<void(const std::string &)> writeDelegate;
 typedef boost::function<void(const std::string &, bool)> urlReadDelegate;
 
-class urlReader
+class reader
 {
 public:
-	urlReader(boost::shared_ptr<connection> cnx, urlReadDelegate write)
+	reader(boost::shared_ptr<connection> cnx, urlReadDelegate write)
 		: cnx_	(cnx)
 		, write_(write	) {}
 
-	void urlReader::getAsync(const std::string & path)
+	void reader::getAsync(const std::string & path)
 	{
 		// build the query
 		std::ostream request_stream(&request_);
@@ -35,19 +38,19 @@ public:
 		//request_stream << "Connection: close\r\n\r\n";
 
 		boost::asio::async_write(cnx_->socket(), request_,
-			cnx_->strand().wrap(boost::bind(&urlReader::handle_write_request, this,
+			cnx_->strand().wrap(boost::bind(&reader::handle_write_request, this,
 				boost::asio::placeholders::error,
 				boost::asio::placeholders::bytes_transferred)));
 	}
 
 private:
 	// client callbacks
-	void urlReader::handle_write_request	(const boost::system::error_code& err, size_t bytes_transferred)
+	void handle_write_request	(const boost::system::error_code& err, size_t bytes_transferred)
 	{ 
 		if (!err)
 		{
 			boost::asio::async_read_until(cnx_->socket(), response_, "\r\n",
-				cnx_->strand().wrap(boost::bind(&urlReader::handle_read_status_line, this,
+				cnx_->strand().wrap(boost::bind(&reader::handle_read_status_line, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -56,7 +59,7 @@ private:
 			write_("", false);
 		}
 	}
-	void urlReader::handle_read_status_line	(const boost::system::error_code& err, size_t bytes_transferred)
+	void handle_read_status_line(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -79,7 +82,7 @@ private:
 			{
 				// Read the response headers, which are terminated by a blank line.
 				boost::asio::async_read_until(cnx_->socket(), response_, "\r\n\r\n",
-					cnx_->strand().wrap(boost::bind(&urlReader::handle_read_headers, this,
+					cnx_->strand().wrap(boost::bind(&reader::handle_read_headers, this,
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred)));
 			}
@@ -87,7 +90,7 @@ private:
 			{
 				// Read the response headers, which are terminated by a blank line.
 				boost::asio::async_read_until(cnx_->socket(), response_, "\r\n\r\n",
-					cnx_->strand().wrap(boost::bind(&urlReader::handle_redirection, this,
+					cnx_->strand().wrap(boost::bind(&reader::handle_redirection, this,
 						boost::asio::placeholders::error,
 						boost::asio::placeholders::bytes_transferred)));
 			}
@@ -101,7 +104,7 @@ private:
 			write_("", false);
 		}
 	}
-	void urlReader::handle_redirection		(const boost::system::error_code& err, size_t bytes_transferred)
+	void handle_redirection		(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -120,7 +123,7 @@ private:
 			write_("", false);
 		}
 	}
-	void urlReader::handle_read_headers		(const boost::system::error_code& err, size_t bytes_transferred)
+	void handle_read_headers	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
@@ -133,14 +136,18 @@ private:
 			{
 				// TODO: use regex for the space
 				if (h.find("transfer-encoding: chunked") != std::string::npos) chunked_ = true;
-				if (h.find("Content-Length: ") != std::string::npos) transfert_ = 0; //TODO: use regex
+				if (h.find("Content-Length: ") != std::string::npos)
+				{
+					boost::regex re("Content-Length: ");
+					transfert_ = 0; //TODO: use regex
+				}
 				header_ << h;
 			}
 
 			// Start reading remaining data until EOF.
 			boost::asio::async_read(cnx_->socket(), response_,
 				boost::asio::transfer_at_least(1),
-				cnx_->strand().wrap(boost::bind(&urlReader::handle_read_content, this,
+				cnx_->strand().wrap(boost::bind(&reader::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -149,14 +156,14 @@ private:
 			write_("", false);
 		}
 	}
-	void urlReader::handle_read_content		(const boost::system::error_code& err, size_t bytes_transferred)
+	void handle_read_content	(const boost::system::error_code& err, size_t bytes_transferred)
 	{
 		if (!err)
 		{
 			// Continue reading remaining data until EOF.
 			boost::asio::async_read(cnx_->socket(), response_,
 				boost::asio::transfer_at_least(1),
-				cnx_->strand().wrap(boost::bind(&urlReader::handle_read_content, this,
+				cnx_->strand().wrap(boost::bind(&reader::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
 		}
@@ -190,7 +197,10 @@ private:
 	// for chucks management
 	bool chunked_;
 	int chunckSize_;
+	
+	// for size read
 	size_t transfert_;
+	static const boost::regex expr_("\\d+$");
 };
 
 class worker : public workerImpl<worker>
@@ -233,7 +243,7 @@ private:
 		{
 			write_("host " + cnx_->host() + " successfully reached");
 
-			reader_ = boost::shared_ptr<urlReader>(new urlReader(cnx_,
+			reader_ = boost::shared_ptr<reader>(new reader(cnx_,
 				urlReadDelegate(boost::bind(&worker::reader_callback, this, _1, _2))));
 			reader_->getAsync("slices/SLICE_COMMODITIES_2017_04_03_129.zip");
 		}
@@ -268,7 +278,7 @@ private:
 	boost::shared_ptr<boost::asio::io_service> io_;
 	
 	boost::shared_ptr<connection> cnx_;
-	boost::shared_ptr<urlReader> reader_;
+	boost::shared_ptr<reader> reader_;
 	writeDelegate write_;
 	int counter_;
 };
