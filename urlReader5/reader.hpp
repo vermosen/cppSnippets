@@ -22,7 +22,8 @@ class reader
 public:
 	reader(boost::shared_ptr<connection> cnx, urlReadDelegate write)
 		: cnx_(cnx)
-		, write_(write) {}
+		, write_(write)
+		, transfert_(1) {}
 
 	void reader::getAsync(const std::string & path)
 	{
@@ -131,19 +132,20 @@ private:
 			// TODO: we may reach the end of the packet before the end of the header
 			std::string h; while (std::getline(response_stream, h) && h != "\r")
 			{
-				// TODO: use regex for the space
+				boost::smatch match;
+				
 				if (h.find("transfer-encoding: chunked") != std::string::npos) chunked_ = true;
-				if (h.find("Content-Length: ") != std::string::npos)
+				else if (boost::regex_search(h, match, expr_))
 				{
-					boost::regex re("Content-Length: ");
-					transfert_ = 0; //TODO: use regex
+					transfert_ = boost::lexical_cast<int>(match[2]); //TODO: use regex
 				}
+
 				header_ << h;
 			}
 
 			// Start reading remaining data until EOF.
-			boost::asio::async_read(cnx_->socket(), response_,
-				boost::asio::transfer_at_least(1),
+ 			boost::asio::async_read(cnx_->socket(), response_,
+				boost::asio::transfer_at_least(transfert_),
 				cnx_->strand().wrap(boost::bind(&reader::handle_read_content, this,
 					boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred)));
@@ -157,17 +159,15 @@ private:
 	{
 		if (!err)
 		{
-			// Continue reading remaining data until EOF.
-			boost::asio::async_read(cnx_->socket(), response_,
-				boost::asio::transfer_at_least(1),
-				cnx_->strand().wrap(boost::bind(&reader::handle_read_content, this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred)));
-		}
-		else if (err == boost::asio::error::eof)	// connection has been closed
-		{
 			content_ << &response_;
 			write_(content_.str(), true);
+
+			//// Continue reading remaining data until EOF.
+			//boost::asio::async_read(cnx_->socket(), response_,
+			//	boost::asio::transfer_at_least(1),
+			//	cnx_->strand().wrap(boost::bind(&reader::handle_read_content, this,
+			//		boost::asio::placeholders::error,
+			//		boost::asio::placeholders::bytes_transferred)));
 		}
 		else if (err != boost::asio::error::eof)
 		{

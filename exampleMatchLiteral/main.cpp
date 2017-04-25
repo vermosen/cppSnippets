@@ -7,9 +7,9 @@
 int main()
 {
 
-	std::string s = "Content Length: 1";
+	std::string s = "Content Length: 123\r";
 
-	boost::regex expr("(Content Length: )(\\d+$)");
+	boost::regex expr("(Content Length: )(\\d+)(\r)");
 	boost::smatch match;
 
 	int num = 0;

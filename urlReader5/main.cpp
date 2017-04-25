@@ -16,11 +16,11 @@
 #include "connections/http.hpp"
 #include "connections/https.hpp"
 
-class worker : public workerImpl<worker>
+class worker : public workerBase<worker>
 {
 public:
 	worker(writeDelegate write, const std::string name = "worker")
-		: workerImpl(name)
+		: workerBase(name)
 		, write_(write)
 		, counter_(1)
 	{

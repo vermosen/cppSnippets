@@ -9,12 +9,12 @@
 #include "threadUtil.hpp"
 
 template <typename W>
-class workerImpl
+class workerBase
 {
 protected:
-	workerImpl(const std::string & name)
+	workerBase(const std::string & name)
 		: name_(name) {}
-	virtual ~workerImpl() { /* interrupt ?*/ };
+	virtual ~workerBase() { /* interrupt ?*/ };
 
 public:
 	void start()
