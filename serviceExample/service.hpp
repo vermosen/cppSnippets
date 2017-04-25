@@ -4,6 +4,8 @@
 #ifdef _WIN32
 #include <windows.h>
 
+#include "singleton.hpp"
+
 namespace dtcc
 {
 	template<typename Child>
@@ -43,6 +45,12 @@ namespace dtcc
 		{
 			static_cast<Child*>(this)->onShutdownImpl();
 		};
+
+		// to access internal child component
+		Child & child()
+		{
+			return *static_cast<Child*>(this);
+		}
 
 		// Set the service status and report the status to the SCM.
 		void setServiceStatus(DWORD dwCurrentState,

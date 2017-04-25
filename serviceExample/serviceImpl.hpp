@@ -11,7 +11,12 @@ namespace dtcc
 	class serviceImpl : public service<serviceImpl>
 	{
 	public:
-		serviceImpl(const int startup) : startup_(startup) {}
+		serviceImpl() {}
+
+		void setPreferences(int pref)
+		{
+			child().setPreferenceImpl(pref);
+		}
 
 		void onStartImpl(DWORD dwArgc, LPSTR * pszArgv)
 		{
@@ -23,23 +28,28 @@ namespace dtcc
 		void onContinueImpl() { run_ = true; }
 		void onShutdownImpl() { run_ = false; }
 
-		std::string name() { return "dtccService"; };
+		static std::string name() { return "dtccService"; };
 		bool canStop() { return true; };
 		bool canShutdown() { return false; };
 		bool canPauseContinue() { return false; };
 
 	private:
 
+		void setPreferenceImpl(int pref)
+		{
+			pref_ = pref;
+		}
+
 		void startWorkers()
 		{
 			if (run_)
 			{
-				boost::this_thread::sleep(boost::chrono::milliseconds(10000));
+				boost::this_thread::sleep(boost::posix_time::milliseconds(10000));
 			}
 		}
 
-		bool run_ = true;
-		int startup_
+		bool run_;
+		int pref_;
 	};
 }
 

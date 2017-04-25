@@ -22,11 +22,13 @@ int main(int argc, char ** argv)
 	{
 		launchDebugger();
 
-		dtcc::serviceImpl srv(3);
+		dtcc::serviceImpl srv;
+
+		srv.setPreferences(3);
 
 		if (!dtcc::serviceImpl::run(srv))
 		{
-			return 1;
+			throw std::exception();
 		}
 
 		return 0;
