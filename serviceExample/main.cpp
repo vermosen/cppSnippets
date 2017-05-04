@@ -7,7 +7,6 @@
 #include <boost/thread.hpp>
 
 #include "serviceImpl.hpp"
-#include "debugger.hpp"
 
 #ifdef _WIN32
 #include <WinSock.h>
@@ -20,11 +19,7 @@ int main(int argc, char ** argv)
 {
 	try
 	{
-		launchDebugger();
-
-		dtcc::serviceImpl srv;
-
-		srv.setPreferences(3);
+		dtcc::serviceImpl srv(3);
 
 		if (!dtcc::serviceImpl::run(srv))
 		{

@@ -108,6 +108,12 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>PowerShell -File "$(ProjectDir)scripts\remove.ps1" "$(ProjectName)"</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>PowerShell -File "$(ProjectDir)scripts\install.ps1" "$(ProjectName)" "$(TargetPath)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -153,12 +159,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="debugger.hpp" />
-    <ClInclude Include="singleton.hpp" />
     <ClInclude Include="service.hpp" />
     <ClInclude Include="serviceImpl.hpp" />
+    <ClInclude Include="singleton.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="scripts\install.ps1" />
