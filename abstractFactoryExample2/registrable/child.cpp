@@ -1,4 +1,4 @@
-#include "registrable/child.hpp"
+#include "child.hpp"
 
 registerType<base, std::tuple<int, std::string>, child1>
 	child1::register_(std::tuple<int, std::string>(1, "A"));

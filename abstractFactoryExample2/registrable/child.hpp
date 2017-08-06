@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "registrable/base.hpp"
+#include "base.hpp"
 
 class child1 : public base 
 {

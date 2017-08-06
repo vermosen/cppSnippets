@@ -1,6 +1,6 @@
-#include "registrable/base.hpp"
+#include "base.hpp"
 
-#include "abstractFactory.hpp"
+#include "../abstractFactory.hpp"
 
 #pragma init_seg(compiler)
 template<>

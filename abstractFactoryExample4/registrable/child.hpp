@@ -5,14 +5,14 @@
 
 #include "registrable/base.hpp"
 
-class child1 : public base 
+class child : public base 
 {
 public:
-	child1(int i) : base(), i_(i) {}
+	child(int i) : base(), i_(i) {}
 	virtual void foo() { std::cout << "It's alive: " << i_ << std::endl; }
 private:
 	int i_;
-	static registerType < base, std::string, child1, std::string, int> register_;
+	static registerType < base, std::string, child, int> register_;
 };
 
 #endif
