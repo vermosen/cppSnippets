@@ -8,20 +8,13 @@
 class child : public base 
 {
 public:
-    child(std::string str, int i) : base(), i_(i) {}
-    virtual void foo() { std::cout << "It's alive: " << i_ << std::endl; }
+    child(std::string str) : base(), str_(str) {}
+    child() : base(), str_("HA ! HA ! HA !") {}
+    virtual void foo() { std::cout << "It's alive: " << str_ << std::endl; }
 private:
-    int i_;
-    static registerType <base, std::string, child, std::string, int> register_;
+    std::string str_;
+    static registerType <base, int, child, std::string> register1_;
+//    static registerType <base, int, child> register2_;
 };
-
-//class parameterlessChild : public base
-//{
-//public:
-//    parameterlessChild() : base() {}
-//    virtual void foo() {std::cout << "it's alive too !" << std::endl; }
-//private:
-//    static registerType <base, std::string, child, void> register_;  
-//};
 
 #endif

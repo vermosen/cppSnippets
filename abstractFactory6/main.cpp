@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <execinfo.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include <iostream>
 #include <string>
 #include <tuple>
@@ -13,31 +7,25 @@
 
 # include "registrable/child.hpp"
 
-// trace info
-void handler(int sig) {
-    void *array[10];
-    size_t size;
-
-    // get void*'s for all entries on the stack
-    size = backtrace(array, 10);
-
-    // print out all the frames to stderr
-    fprintf(stderr, "Error: signal %d:\n", sig);
-    backtrace_symbols_fd(array, size, STDERR_FILENO);
-    exit(1);
-}
-
 // void argument list
 int main() 
-{
-    // install the handler
-    signal(SIGSEGV, handler);
-    
+{    
     try
     {
-        boost::shared_ptr<base> c = factory<base, std::string, std::string, int>::createInstance("A", "A", 1);
-
-        c->foo();
+        // testing the create functions
+        base * a = create<base, child, std::string>("A");                       // create a pointer on C by calling the ctor of child with parameter "A"
+        a->foo();
+        
+        base * b = create<base, child>();                                       // same but with the default ctor
+        b->foo();
+        
+        // testing the dummy registration structs
+        dummy<base, int, child, std::string> d1;
+        d1(1, "hello world!");
+        
+        dummy<base, int, child> d2;
+        d2(1);
+        
     }
     catch (const std::exception & ex)
     {
@@ -46,5 +34,4 @@ int main()
     }
 
     return 0;
-
 }

@@ -4,9 +4,9 @@
 
 #pragma init_seg(compiler)
 template<>
-factory<base, std::string, std::string, int>::map_type *
-    factory<base, std::string, std::string, int>::map_ = new factory::map_type();
+factory<base, int, std::string>::map_type *
+    factory<base, int, std::string>::map_ = new factory::map_type();
 
 template<>
-factory<base, std::string>::map_type *
-    factory<base, std::string>::map_ = new factory::map_type();
+factory<base, int>::map_type *
+    factory<base, int>::map_ = new factory::map_type();

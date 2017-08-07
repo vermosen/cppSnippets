@@ -3,6 +3,7 @@
 
 #include <map>
 #include <functional>
+#include <iostream>
 
 #include <boost/shared_ptr.hpp>
 
@@ -18,7 +19,7 @@ protected:
     typedef std::map<key_type, C * (*)(Args ...)> map_type;
 
 public:
-    static boost::shared_ptr<C> createInstance(const K & key, const Args & ... args)
+    static boost::shared_ptr<C> createInstance(const K & key, Args ... args)
     {
         typename map_type::iterator it = getMap()->find(key);
 
@@ -50,10 +51,30 @@ protected:
 template <typename C, typename T, typename ... Args> 
 C * create(Args ... args) 
 {
-    C * ptr;
-    ptr = new T(args ...);
-    return ptr;
+    return new T(args ...);
 }
+
+// dummy factory
+template <typename C, typename K, typename T, typename ... Args>
+struct dummyFactory
+{
+    
+};
+
+//dummy register
+template <typename C, typename K, typename T, typename ... Args>
+struct dummy : dummyFactory<C, K, T, Args ...>
+{
+    void operator()(const K & key, Args ... args) const 
+    {
+        C * base = create<C, T, Args ...>(args ...);
+        std::cout 
+            << "registered key " 
+            << key 
+            << " yield "; 
+            base->foo(); 
+    }
+};
 
 //registration struct
 template <typename C, typename K, typename T, typename ... Args>

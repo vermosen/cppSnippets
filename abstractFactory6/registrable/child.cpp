@@ -1,7 +1,7 @@
 #include "registrable/child.hpp"
 
-registerType<base, std::string, child, std::string, int>
-    child::register_(std::string("A"));
+registerType<base, int, child, std::string>
+    child::register1_(1);
 
-//registerType<base, std::string, child, void> 
-//    parameterlessChild::register_;
+//registerType<base, int, child> 
+//    child::register2_;
