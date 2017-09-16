@@ -8,6 +8,14 @@
 
 #include <iostream>
 
+
+template <typename T>
+void swap(T & i, T & j)
+{
+    std::swap<T>(i, j);
+}
+
+template <>
 void swap(int & i, int & j)
 {
 	i += j;
@@ -31,8 +39,10 @@ int main()
 	 * Bubble Sort is the simplest sorting algorithm
 	 * that works by repeatedly swapping the adjacent
 	 * elements if they are in wrong order.
+         * Complexity is O(n^2)
 	 */
 	int arr[] = {4, 3, 40, 10, 5};
+                
 	int n = sizeof(arr)/ sizeof(arr[0]);
 	bubbleSort(arr, n);
 

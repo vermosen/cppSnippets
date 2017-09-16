@@ -6,12 +6,6 @@
     </data>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group name="cppSnippets">
-            <file>file:/home/vermosen/git/cppSnippets/abstractFactoryExample3/registrable/child.hpp</file>
-            <file>file:/home/vermosen/git/cppSnippets/abstractFactoryExample3/main.cpp</file>
-            <file>file:/home/vermosen/git/cppSnippets/abstractFactoryExample3/abstractFactory.hpp</file>
-            <file>file:/home/vermosen/git/cppSnippets/abstractFactoryExample3/registrable/base.hpp</file>
-            <file>file:/home/vermosen/git/cppSnippets/abstractFactoryExample3/registrable/child.cpp</file>
-        </group>
+        <group name="cppSnippets"/>
     </open-files>
 </project-private>

@@ -14,7 +14,7 @@ public:
 private:
     std::string str_;
     static registerType <base, int, child, std::string> register1_;
-//    static registerType <base, int, child> register2_;
+    //static registerType <base, int, child> register2_;
 };
 
 #endif

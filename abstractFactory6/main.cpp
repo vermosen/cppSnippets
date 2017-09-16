@@ -24,8 +24,7 @@ int main()
         d1(1, "hello world!");
         
         dummy<base, int, child> d2;
-        d2(1);
-        
+        d2(1);        
     }
     catch (const std::exception & ex)
     {
