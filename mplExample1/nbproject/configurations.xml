@@ -7,9 +7,6 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
-    <itemPath>daysOfWeek.cpp</itemPath>
-    <itemPath>daysOfWeek.hpp</itemPath>
-    <itemPath>enumManager.hpp</itemPath>
     <itemPath>main.cpp</itemPath>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
@@ -21,18 +18,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
-        <ccTool>
-          <incDir>
-            <pElem>.</pElem>
-          </incDir>
-        </ccTool>
       </compileType>
-      <item path="daysOfWeek.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="daysOfWeek.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="enumManager.hpp" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
@@ -56,12 +42,6 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
-      <item path="daysOfWeek.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="daysOfWeek.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="enumManager.hpp" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>

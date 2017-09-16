@@ -35,6 +35,8 @@ protected:
         if (map_)
         {
             map_->clear();
+        
+            delete map_;
         }
     }
     static map_type * getMap()
