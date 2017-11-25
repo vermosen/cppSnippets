@@ -11,28 +11,28 @@ class factory
 {
 
 protected:
-	typedef K key_type;
-	typedef std::map<key_type, C*(*)()> map_type;
+    typedef K key_type;
+    typedef std::map<key_type, C*(*)()> map_type;
 
 public:
-	static boost::shared_ptr<C> createInstance(const K & key)
-	{
-		typename map_type::iterator it = getMap()->find(key);
-		
-		if (it == getMap()->end())
-			throw std::runtime_error("unknown key found !");
-		else
-			return boost::shared_ptr<C>(it->second());
-	}
+    static boost::shared_ptr<C> createInstance(const K & key)
+    {
+        typename map_type::iterator it = getMap()->find(key);
+
+        if (it == getMap()->end())
+            throw std::runtime_error("unknown key found !");
+        else
+            return boost::shared_ptr<C>(it->second());
+    }
 
 protected:
-	static map_type * getMap()
-	{
-		if (!map_) { map_ = new map_type; }
-		return map_;
-	}
+    static map_type * getMap()
+    {
+        if (!map_) { map_ = new map_type; }
+        return map_;
+    }
 
-	static map_type * map_;
+    static map_type * map_;
 
 };
 
@@ -43,10 +43,10 @@ template <typename C, typename T> C * create() { return new T; }
 template <typename C, typename K, typename T>
 struct registerType : factory<C, K>
 {
-	registerType(const K & key)
-	{
-		factory<C, K>::getMap()->insert(std::make_pair(key, &create<C, T>));
-	}
+    registerType(const K & key)
+    {
+            factory<C, K>::getMap()->insert(std::make_pair(key, &create<C, T>));
+    }
 };
 
 #endif

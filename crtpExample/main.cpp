@@ -1,30 +1,29 @@
-#pragma once
 #include <iostream>
 
-template <class T>
-class X 
+template <typename T>
+class parent
 { 
 
 public:
-	void interface()
-	{
-		static_cast<T*>(this)->interface();
-	}
+    void interface()
+    {
+        static_cast<T*>(this)->interfaceImpl();
+    }
 };
 
-class A : public X<A> 
+class child : public parent<child> 
 {
-	friend X;
+    friend parent;
 private:
-	void interface()
-	{
-		std::cout << "Derived implementation\n";
-	}
+    void interfaceImpl()
+    {
+        std::cout << "Derived implementation\n";
+    }
 };
 
 int main()
 {
-	A d;
-	d.X::interface();  // Prints "Derived implementation"
-	return 0;
+    child d;
+    d.interface();  // Prints "Derived implementation"
+    return 0;
 }
