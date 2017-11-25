@@ -12,6 +12,6 @@ SERVICE_NAME: serviceExample
         SERVICE_EXIT_CODE  : 0  (0x0)
         CHECKPOINT         : 0x1
         WAIT_HINT          : 0x0
-        PID                : 19968
+        PID                : 118620
         FLAGS              : 
 successfully added Windows service (serviceExample)
