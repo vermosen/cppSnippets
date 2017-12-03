@@ -1,17 +1,11 @@
 starting install script
 Trying to install service serviceExample from path C:\Git\cppSnippets\x64\Debug\serviceExample.exe with arguments 
-trying to create service (serviceExample)
-[SC] CreateService SUCCESS
-trying to start service (serviceExample)
-
-SERVICE_NAME: serviceExample 
-        TYPE               : 10  WIN32_OWN_PROCESS  
-        STATE              : 2  START_PENDING 
-                                (STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
-        WIN32_EXIT_CODE    : 0  (0x0)
-        SERVICE_EXIT_CODE  : 0  (0x0)
-        CHECKPOINT         : 0x1
-        WAIT_HINT          : 0x0
-        PID                : 118620
-        FLAGS              : 
-successfully added Windows service (serviceExample)
+service serviceExample hasn't been removed
+An exception has been thrown
+System.Management.Automation.RuntimeException
+ScriptHalted
+Microsoft.PowerShell.Commands.Internal.Format.FormatStartData
+Microsoft.PowerShell.Commands.Internal.Format.GroupStartData
+Microsoft.PowerShell.Commands.Internal.Format.FormatEntryData
+Microsoft.PowerShell.Commands.Internal.Format.GroupEndData
+Microsoft.PowerShell.Commands.Internal.Format.FormatEndData
