@@ -9,5 +9,11 @@
         <group name="cppSnippets">
             <file>file:/home/vermosen/git/cppSnippets/enumFactoryExample2/main.cpp</file>
         </group>
+        <group name="testEigen">
+            <file>file:/home/vermosen/git/cppSnippets/enumFactoryExample2/main.cpp</file>
+        </group>
+        <group>
+            <file>file:/home/vermosen/git/cppSnippets/enumFactoryExample2/main.cpp</file>
+        </group>
     </open-files>
 </project-private>
