@@ -166,6 +166,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mplUnrollSequence", "mplUnr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mplUnfoldWithParameters", "mplUnfoldWithParameters\mplUnfoldWithParameters.vcxproj", "{FE1EFFEA-8E27-4F33-9D8E-BE66AA7D0297}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mapOfMaps", "mapOfMap\mapOfMap.vcxproj", "{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (intel)|x64 = Debug (intel)|x64
@@ -1317,6 +1319,22 @@ Global
 		{FE1EFFEA-8E27-4F33-9D8E-BE66AA7D0297}.Release|x64.Build.0 = Release|x64
 		{FE1EFFEA-8E27-4F33-9D8E-BE66AA7D0297}.Release|x86.ActiveCfg = Release|Win32
 		{FE1EFFEA-8E27-4F33-9D8E-BE66AA7D0297}.Release|x86.Build.0 = Release|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug (intel)|x64.ActiveCfg = Debug|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug (intel)|x64.Build.0 = Debug|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug (intel)|x86.ActiveCfg = Debug|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug (intel)|x86.Build.0 = Debug|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug|x64.ActiveCfg = Debug|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug|x64.Build.0 = Debug|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug|x86.ActiveCfg = Debug|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Debug|x86.Build.0 = Debug|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release AVX|x64.ActiveCfg = Release|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release AVX|x64.Build.0 = Release|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release AVX|x86.ActiveCfg = Release|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release AVX|x86.Build.0 = Release|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release|x64.ActiveCfg = Release|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release|x64.Build.0 = Release|x64
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release|x86.ActiveCfg = Release|Win32
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1387,6 +1405,7 @@ Global
 		{EDB676E5-3FCD-41CB-93CC-FDE6B1F02132} = {DDC4ECC5-44E5-4FF5-8B56-2288803B5C16}
 		{3B501DA2-31C8-4576-B1DC-7174948A98F5} = {EDB676E5-3FCD-41CB-93CC-FDE6B1F02132}
 		{FE1EFFEA-8E27-4F33-9D8E-BE66AA7D0297} = {EDB676E5-3FCD-41CB-93CC-FDE6B1F02132}
+		{91A6BF3A-B987-4116-8AC0-1E5B81C6F3D6} = {EC4B0A9F-55DA-40E2-A4F6-E64639C50D6C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3209FB23-0ABF-4078-A7B6-62BD86BED932}
