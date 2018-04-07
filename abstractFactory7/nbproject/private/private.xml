@@ -10,5 +10,13 @@
             <file>file:/home/vermosen/git/cppSnippets/abstractFactory7/abstractFactory.hpp</file>
             <file>file:/home/vermosen/git/cppSnippets/abstractFactory7/registrable/child.cpp</file>
         </group>
+        <group name="testEigen">
+            <file>file:/home/vermosen/git/cppSnippets/abstractFactory7/abstractFactory.hpp</file>
+            <file>file:/home/vermosen/git/cppSnippets/abstractFactory7/registrable/child.cpp</file>
+        </group>
+        <group>
+            <file>file:/home/vermosen/git/cppSnippets/abstractFactory7/abstractFactory.hpp</file>
+            <file>file:/home/vermosen/git/cppSnippets/abstractFactory7/registrable/child.cpp</file>
+        </group>
     </open-files>
 </project-private>
