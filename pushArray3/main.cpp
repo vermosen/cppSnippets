@@ -5,6 +5,11 @@ template<unsigned... args> struct ArrayHolder {
 	static constexpr std::array<unsigned, sizeof...(args)> data = { args... };
 };
 
+template<typename T>
+int size() {
+	return T::data.size();
+};
+
 template<size_t N, template<size_t> class F, unsigned... args>
 struct generate_array_impl {
 	typedef typename generate_array_impl<N - 1, F, F<N>::value, args...>::result result;
@@ -28,7 +33,7 @@ int main() {
 	const size_t count = 5;
 	typedef generate_array<count, MetaFunc>::result A;
 
-	for (size_t i = 0; i<count; ++i)
+	for (size_t i = 0; i < size<A>(); ++i)
 		std::cout << A::data[i] << "\n";
 
 	return 0;
