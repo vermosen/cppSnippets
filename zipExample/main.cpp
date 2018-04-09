@@ -17,7 +17,6 @@ int main(int * argc, char ** argv)
 
 	try
 	{
-
 		std::stringstream sOut;
 		std::stringstream sIn("hello world");
 
