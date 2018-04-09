@@ -31,5 +31,7 @@ _ReSharper*/
 *.db
 *VC.db
 *VC.openDB
+*.VC.db-shm
+*.VC.db-wal
 /enumFactoryExample2/My Amplifier XE Results - enumFactoryExample2
 *.ipch
