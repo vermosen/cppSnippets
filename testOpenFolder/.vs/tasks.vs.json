@@ -1,0 +1,30 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "appliesTo": "makefile",
+      "args": [
+        "build"
+      ],
+      "command": "make",
+      "contextType": "build",
+      "envVars": {
+        "VSCMD_START_DIR": "\"${workspaceRoot}\""
+      },
+      "taskName": "makefile-build",
+      "type": "launch"
+    },
+    {
+      "taskName": "Test Remote Task",
+      "appliesTo": "helloWorld/main.cpp",
+      "type": "remote",
+      "contextType": "build",
+      "command": "g++ main.cpp",
+      "remoteMachineName": "192.168.0.11",
+      "remoteCopyDirectory": "~/helloWorld",
+      "remoteCopyMethod": "rsync",
+      "remoteWorkingDirectory": "~/helloWorld",
+      "remoteCopySourcesOutputVerbosity": "Verbose"
+    }
+  ]
+}
