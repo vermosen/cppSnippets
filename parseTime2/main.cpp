@@ -11,7 +11,7 @@ int main() {
 
 	// goal: read a time string in format HH:MM:SS.ffff
 	// given a precision and add the corresponding ticks
-	std::string test = "10:56:10.0554565464";
+	std::string test = "10:56:10";
 
 	unsigned int precision = 3;
 
