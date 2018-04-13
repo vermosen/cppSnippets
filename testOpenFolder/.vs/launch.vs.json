@@ -1,0 +1,37 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "cwd": "${debugInfo.remoteWorkspaceRoot}",
+      "externalConsole": true,
+      "MIMode": "gdb",
+      "name": "helloWorld",
+      "pipeTransport": {
+        "pipeProgram": "${debugInfo.shellexecPath}",
+        "pipeArgs": [
+          "/s",
+          "${debugInfo.remoteMachineId}",
+          "/p",
+          "${debugInfo.parentProcessId}",
+          "/c",
+          "${debuggerCommand}",
+          "--tty=${debugInfo.tty}"
+        ],
+        "debuggerPath": "/usr/bin/gdb"
+      },
+      "program": "${debugInfo.fullTargetPath}",
+      "project": "helloWorld",
+      "remoteMachineName": "${debugInfo.remoteMachineName}",
+      "setupCommands": [
+        {
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "showDisplayString": true,
+      "type": "cppdbg",
+      "visualizerFile": "${debugInfo.linuxNatvisPath}"
+    }
+  ]
+}

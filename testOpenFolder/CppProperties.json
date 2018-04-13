@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "inheritEnvironments": [
+        "linux_x64"
+      ],
+      // this is a comment
+      "name": "Linux Debug",
+      "includePath": [ "${env.INCLUDE}" ],
+      "defines": [ "DEBUG", "__GNUC__" ],
+      "undefines": [ "NDEBUG" ],
+      "compilerSwitches": "-Og --std=c++11",
+      "intelliSenseMode": "linux-gcc-x64",
+      "forcedInclude": [ "pch.h" ]
+    }
+  ]
+}
