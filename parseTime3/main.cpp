@@ -11,19 +11,18 @@ int main() {
 
 	// goal: read a time string in format HH:MM:SS.ffff
 	// given a precision and add the corresponding ticks
-	std::string test = "10:56:10.123456";
+	std::string test = "10:56:10.12344";
 
 	unsigned int precision = 3;
 
-	boost::fusion::vector<unsigned, unsigned, unsigned, std::string> args;
+	boost::fusion::vector<unsigned, unsigned, unsigned, unsigned> args;
 
 	bool res = qi::phrase_parse(
-		  test.cbegin(), test.cend()
+		test.cbegin(), test.cend()
 		, qi::no_skip[qi::uint_[qi::_pass = (qi::_1 < 24)]
-			>> ':' >> qi::uint_[qi::_pass = (qi::_1 < 60)]
-			>> ':' >> qi::uint_[qi::_pass = (qi::_1 < 60)]
-			>> (qi::eps(phx::ref(precision) > 0) >> '.' 
-				>> qi::as<std::string>()[qi::repeat(phx::ref(precision))[qi::char_]])]
+		>> ':' >> qi::uint_[qi::_pass = (qi::_1 < 60)]
+		>> ':' >> qi::uint_[qi::_pass = (qi::_1 < 60)]
+		>> (qi::eps(phx::ref(precision) > 0) >> '.' >> qi::uint_[qi::repeat(4)[qi::char_]])]
 		, qi::space, args);
 
 	return 0;
