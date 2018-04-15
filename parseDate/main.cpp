@@ -2,52 +2,57 @@
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/fusion/include/vector.hpp>
+#include <boost/fusion/include/at.hpp>
 
 struct myDate {
 
 	myDate() {}
-	myDate(const int d, const int m, const int y) {
-			
-	}
+	myDate(unsigned m, unsigned d, unsigned y) 
+	: m_month(m), m_day(d), m_year(y) {}
+
+	unsigned m_month;
+	unsigned m_day;
+	unsigned m_year;
+
 };
+
+namespace qi = boost::spirit::qi;
 
 namespace boost {
 namespace spirit {
-namespace traits
-{
+namespace traits {
 	template<>
 	struct transform_attribute<
-		::myDate, std::tuple<int, int, int>, qi::domain>
-	{
-		typedef std::tuple<int, int, int> date_parts;
-		typedef date_parts type;
+		myDate, boost::fusion::vector3<unsigned, unsigned, unsigned>, qi::domain> {
+		typedef boost::fusion::vector3<unsigned, unsigned, unsigned> type;
+		static type pre(myDate& d) { return type(); }
+		static void post(myDate& val, const type& v) {
 
-		static date_parts pre(::myDate) {
-			return date_parts();
-		}
+			unsigned m = boost::fusion::at_c<0>(v);
+			unsigned d = boost::fusion::at_c<1>(v);
+			unsigned y = boost::fusion::at_c<2>(v);
 
-		static void post(::myDate& d, date_parts const& v) {
-			d = ::myDate(std::get<0>(v), std::get<1>(v), std::get<2>(v));
+			val = myDate(m, d, y);
 		}
+		static void fail(myDate&) {}
 	};
 }}}
-
-namespace qi = boost::spirit::qi;
 
 int main() {
 
 	std::string test = "10/12/2017";
 
-	qi::rule<
-		std::string::const_iterator, 
-		myDate(),
-		qi::space_type
-	> rDate = qi::no_skip[qi::int_ >> '/' >> qi::int_ >> '/' >> qi::int_];
+	myDate d;
 
 	bool res = qi::phrase_parse(
 		  test.cbegin(), test.cend()
-		, rDate
-		, qi::space);
+		, qi::attr_cast(
+			qi::no_skip[qi::uint_ >> '/' 
+				>> qi::uint_ >> '/' 
+				>> qi::uint_
+			]
+		), qi::space, d);
 
 	return 0;
 }
