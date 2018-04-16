@@ -1,7 +1,8 @@
-#define BOOST_SPIRIT_DEBUG 
+//#define BOOST_SPIRIT_DEBUG 
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/at.hpp>
 
@@ -10,16 +11,14 @@ namespace phx = boost::phoenix;
 
 int main() {
 
-	typedef boost::fusion::vector<char, int, char> retval;
+	std::string test = "-1245+";
+	int r;
 
-	std::string test = "-1245-";
-	retval r;
+	qi::rule<std::string::const_iterator, int(), qi::locals<char>, qi::space_type> rulez;
 
-	qi::rule<std::string::const_iterator, retval(), qi::space_type, qi::locals<char>> rulez;
-
-	rulez = qi::char_("-")[qi::_val = qi::_a]
-		>> qi::int_
-		>> qi::char_(qi::_a)
+	rulez = qi::omit[qi::char_("-/+")[qi::_a = qi::_1]]
+		>> qi::int_[qi::_val = qi::_1]
+		>> qi::omit[qi::char_(qi::_a)]
 		;
 
 	rulez.name("rulez");

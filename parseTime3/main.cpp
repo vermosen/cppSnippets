@@ -5,6 +5,8 @@
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/fusion/include/at.hpp>
 
+#define memchr_in_long_block(s,c,l) memchrSSE2(s,c,l)
+
 namespace qi = boost::spirit::qi;
 namespace phx = boost::phoenix;
 
