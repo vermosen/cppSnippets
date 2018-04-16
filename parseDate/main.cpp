@@ -1,5 +1,7 @@
 #include <tuple>
 
+#define BOOST_SPIRIT_DEBUG 
+
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/fusion/include/vector.hpp>
@@ -15,9 +17,17 @@ struct myDate {
 	unsigned m_day;
 	unsigned m_year;
 
+	friend std::ostream;
 };
 
+std::ostream& operator<<(std::ostream& os, const myDate& d)
+{
+	os << "[" << d.m_year << "-" << d.m_month << "-" << d.m_day << "]";
+	return os;
+}
+
 namespace qi = boost::spirit::qi;
+namespace phx = boost::phoenix;
 
 namespace boost {
 namespace spirit {
@@ -44,15 +54,25 @@ int main() {
 	std::string test = "10/12/2017";
 
 	myDate d;
+	
+	qi::rule<std::string::const_iterator, myDate(), qi::locals<std::string>, qi::space_type> rule;
+
+	rule = qi::attr_cast(
+		qi::no_skip[
+			   qi::uint_
+			>> qi::omit[qi::char_("/-")[qi::_a]]
+			>> qi::uint_
+			>> qi::omit[qi::char_(qi::_a)]
+			>> qi::uint_
+		]);
+
+	rule.name("rule");
+	BOOST_SPIRIT_DEBUG_NODES((rule))
+	debug(rule);
 
 	bool res = qi::phrase_parse(
 		  test.cbegin(), test.cend()
-		, qi::attr_cast(
-			qi::no_skip[qi::uint_ >> '/' 
-				>> qi::uint_ >> '/' 
-				>> qi::uint_
-			]
-		), qi::space, d);
+		, rule, qi::space, d);
 
 	return 0;
 }
