@@ -73,7 +73,7 @@ int main()
 	for (int i = 0; i < 4000; i++) {
 		auto it = ss.insert(std::make_pair(i, std::map<int, int>()));
 		for (int j = 0; j < 4000; j++) {
-			it.first->second.insert(std::make_pair(k++, l++));
+			it.first->second.insert(std::make_pair(j, l++));
 		}
 	}
 	elapsed("stl insertion", start);
