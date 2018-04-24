@@ -56,9 +56,8 @@ typedef bmi::multi_index_container<				// forget about the ugly declaration...
 > 
 boost_set;
 
-// the usual guy
+// the standard equivalent
 typedef typename std::map<int, std::map<int, int> > standard_set;
-						//map<uid, map<pid, lid>>
 
 int main()
 {
@@ -70,9 +69,9 @@ int main()
 
 	point_type start = clock_type::now();
 	// insertion stl
-	for (int i = 0; i < 4000; i++) {
+	for (int i = 0; i < 5000; i++) {
 		auto it = ss.insert(std::make_pair(i, std::map<int, int>()));
-		for (int j = 0; j < 4000; j++) {
+		for (int j = 0; j < 5000; j++) {
 			it.first->second.insert(std::make_pair(j, l++));
 		}
 	}
@@ -80,10 +79,9 @@ int main()
 
 	// insertion boost
 	k = 0; l = 0;
-
 	start = clock_type::now();
-	for (int i = 0; i < 4000; i++) {
-		for (int j = 0; j < 4000; j++) {
+	for (int i = 0; i < 5000; i++) {
+		for (int j = 0; j < 5000; j++) {
 			bs.insert(instrument(l++, i, k++));
 		}
 	}
@@ -92,20 +90,23 @@ int main()
 	// step 2 - lookup
 	int ttt = 0;
 	start = clock_type::now();
-	for (int i = 0; i < 4000; i++) {
+	for (int i = 0; i < 5000; i++) {
 		ttt += ss[i][i];
 	}
+	
 	elapsed("stl lookup ", start);
 	std::cout << ttt << std::endl;
 
 	ttt = 0;
 	start = clock_type::now();
-	auto& index = bs.get<0>();
-	for (int i = 0; i < 4000; i++) {
-		auto range = index.equal_range(boost::make_tuple(i, i));
-		ttt += range.first->lid;
+	auto& index = bs.get<tags::composite>();
+	for (int i = 0; i < 5000; i++) {
+		boost_set::iterator it = index.find(std::make_tuple(i, i));
+		ttt += it->lid;
 	}
+
 	elapsed("boost lookup ", start);
 	std::cout << ttt << std::endl;
+	system("pause");
 	return 0;
 }
