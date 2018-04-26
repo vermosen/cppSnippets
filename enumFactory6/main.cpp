@@ -60,7 +60,6 @@ namespace details {
 
 	template<class T>
 	struct stash {
-
 		static_assert(size<T>::value >= 1, "N must be at least 1");
 
 		stash() = delete;
@@ -141,27 +140,29 @@ struct utils::details::size<X> {			\
 	BOOST_PP_SEQ_SIZE(SEQ);					\
 };											\
 FOR_EACH_DECLARE_CREATOR(X, SEQ)			\
+											\
+template <typename T>						\
+inline T& operator<<(T& os, X elem) {		\
+	os << utils::factory<X>::key(elem);		\
+	return (os);							\
+}
 
 #define DECLARE_ENUM(X, SEQ)				\
 	DECLARE_ENUM_ALL(X, int, const char*, SEQ)
 
 DECLARE_ENUM(foo,
-	(one  , 1, "one"  )
-	(five , 5, "five" )
+	(one, 1, "one")
+	(five, 5, "five")
 	(three, 3, "three")
 )
 
 // cpp
 DEFINE_ENUM(foo);
-///////////////////////////////////////////////////////////////////////////////
 
 int main() {
-
 	std::cout << utils::factory<foo>::key(foo::one) << std::endl;
 	auto t2 = utils::factory<foo>::value("five");
 	return 0;
-
-	// TODO: add operator <<
 }
 
 #endif /* ENUMMANAGER_HPP */
