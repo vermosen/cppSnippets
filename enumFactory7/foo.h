@@ -16,5 +16,3 @@ DECLARE_ENUM_ALL(test::foo, std::int8_t, char const*,
 (three, "three")
 )
 
-// cpp
-DEFINE_ENUM(test::foo);
