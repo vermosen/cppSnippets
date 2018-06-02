@@ -25,53 +25,53 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enumFactoryExample", "enumF
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enumFactoryExample2", "enumFactoryExample2\enumFactoryExample2.vcxproj", "{437B6E74-2DCA-4547-8F03-153640B3DEA9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample01", "spiritExample\spiritExample.vcxproj", "{FB6027C4-70E1-4A70-998F-EF8C875A790C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample01", "boost\spirit\spiritExample\spiritExample.vcxproj", "{FB6027C4-70E1-4A70-998F-EF8C875A790C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logExample", "logExample\logExample.vcxproj", "{1CAA5F45-B499-4AF6-9754-2875F2CCA6E4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logExample2", "logExample2\logExample2.vcxproj", "{55CFEC79-11EA-44CB-9AAB-56D1E8083A72}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample02", "spiritExample2\spiritExample2.vcxproj", "{331D0CA0-C3EB-47B1-BC29-78E0241D0DC2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample02", "boost\spirit\spiritExample2\spiritExample2.vcxproj", "{331D0CA0-C3EB-47B1-BC29-78E0241D0DC2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample03", "spiritExample3\spiritExample3.vcxproj", "{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample03", "boost\spirit\spiritExample3\spiritExample3.vcxproj", "{8B0BF18B-D19E-40F0-900B-44237DFFA4E8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample04", "spiritExample4\spiritExample4.vcxproj", "{01748776-AEA8-4549-8C89-13C34154C884}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample04", "boost\spirit\spiritExample4\spiritExample4.vcxproj", "{01748776-AEA8-4549-8C89-13C34154C884}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample05", "spiritExample5\spiritExample5.vcxproj", "{79BB0C6F-A8A7-47DB-8ED9-040EEE14869E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample05", "boost\spirit\spiritExample5\spiritExample5.vcxproj", "{79BB0C6F-A8A7-47DB-8ED9-040EEE14869E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample06", "spiritExample6\spiritExample6.vcxproj", "{ACD003E6-6AFE-42EF-AB98-286628338C29}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample06", "boost\spirit\spiritExample6\spiritExample6.vcxproj", "{ACD003E6-6AFE-42EF-AB98-286628338C29}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample07", "spiritExample7\spiritExample7.vcxproj", "{ABF4CF97-7F3E-4727-841D-58BBB945FB8F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample07", "boost\spirit\spiritExample7\spiritExample7.vcxproj", "{ABF4CF97-7F3E-4727-841D-58BBB945FB8F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample08", "spiritExample8\spiritExample8.vcxproj", "{D80F9643-2F15-4DBD-BD26-AD249883A453}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample08", "boost\spirit\spiritExample8\spiritExample8.vcxproj", "{D80F9643-2F15-4DBD-BD26-AD249883A453}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample09", "spiritExample9\spiritExample9.vcxproj", "{62272BE5-A424-4209-A5B1-78B80DB25F21}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample09", "boost\spirit\spiritExample9\spiritExample9.vcxproj", "{62272BE5-A424-4209-A5B1-78B80DB25F21}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "spirit", "spirit", "{63333CE2-C904-4890-AB6C-1737FB53AED9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample10", "spiritExample10\spiritExample10.vcxproj", "{6962AA67-541E-4864-B45E-E703724B393E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample10", "boost\spirit\spiritExample10\spiritExample10.vcxproj", "{6962AA67-541E-4864-B45E-E703724B393E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample11", "spiritExample11\spiritExample11.vcxproj", "{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample11", "boost\spirit\spiritExample11\spiritExample11.vcxproj", "{CA3CA5B0-EFC3-4AE8-A64C-06802FEED58C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample12", "spiritExample12\spiritExample12.vcxproj", "{D9DF5EFB-364F-4B06-B300-BF9E544B8161}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample12", "boost\spirit\spiritExample12\spiritExample12.vcxproj", "{D9DF5EFB-364F-4B06-B300-BF9E544B8161}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample13", "spiritExample13\spiritExample13.vcxproj", "{7F063F43-EA55-48AF-924C-C011183F7C89}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample13", "boost\spirit\spiritExample13\spiritExample13.vcxproj", "{7F063F43-EA55-48AF-924C-C011183F7C89}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample14", "spiritExample14\spiritExample14.vcxproj", "{84B09FC6-A541-4F7B-BAE4-5D7E2A3165C2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample14", "boost\spirit\spiritExample14\spiritExample14.vcxproj", "{84B09FC6-A541-4F7B-BAE4-5D7E2A3165C2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample15", "spiritExample15\spiritExample15.vcxproj", "{654CE136-5544-4E95-9488-9A4D43C6FD9B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample15", "boost\spirit\spiritExample15\spiritExample15.vcxproj", "{654CE136-5544-4E95-9488-9A4D43C6FD9B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample16", "spiritExample16\spiritExample16.vcxproj", "{0049F687-5665-40A1-9B1F-C3457EDA3851}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample16", "boost\spirit\spiritExample16\spiritExample16.vcxproj", "{0049F687-5665-40A1-9B1F-C3457EDA3851}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample17", "spiritExample17\spiritExample17.vcxproj", "{625984F3-149C-48E6-8FB4-197D096A28F0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample17", "boost\spirit\spiritExample17\spiritExample17.vcxproj", "{625984F3-149C-48E6-8FB4-197D096A28F0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample18", "spiritExample18\spiritExample18.vcxproj", "{FA961B2B-FB50-4D28-ABEE-658346C94AFA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample18", "boost\spirit\spiritExample18\spiritExample18.vcxproj", "{FA961B2B-FB50-4D28-ABEE-658346C94AFA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "safeQueueExample1", "safeQueueExample1\safeQueueExample1.vcxproj", "{DD03916C-0711-470E-986F-61E465607D67}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "heapExample", "heapExample\heapExample.vcxproj", "{D2D91C3C-1894-4371-821D-86F5C1FCB803}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample19", "spiritExample19\spiritExample19.vcxproj", "{252C114A-AB66-4357-9400-41BC6773210E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample19", "boost\spirit\spiritExample19\spiritExample19.vcxproj", "{252C114A-AB66-4357-9400-41BC6773210E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "heapSort", "heapSort\heapSort.vcxproj", "{1BA353E8-21FB-4611-882A-3391B0E75625}"
 EndProject
@@ -94,9 +94,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "urlReader1", "urlReader\url
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "longestPalindrome", "longestPalindrome\longestPalindrome.vcxproj", "{475769ED-5BD5-420A-ADA9-7363B2D017A9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample20", "spiritExample20\spiritExample20.vcxproj", "{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample20", "boost\spirit\spiritExample20\spiritExample20.vcxproj", "{8B10D6FB-A2CF-4FC7-9355-E75F2D77BAE0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample21", "spiritExample21\spiritExample21.vcxproj", "{491E0D79-334F-4F61-822D-EF742FFA4621}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spiritExample21", "boost\spirit\spiritExample21\spiritExample21.vcxproj", "{491E0D79-334F-4F61-822D-EF742FFA4621}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "multithreadTimer2", "nonStoppingService\nonStoppingService.vcxproj", "{554BFD2B-2040-4D06-A3E4-BA585826493D}"
 EndProject
