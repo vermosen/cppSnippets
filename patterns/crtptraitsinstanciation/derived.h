@@ -2,12 +2,16 @@
 
 #include <iostream>
 
+#include "derived_fwd.h"
 #include "base.h"
 #include "trait.h"
 
-struct derived : public crtp<derived> {
+template <>
+struct derived<double> : public crtp<derived<double>> {
 
-	void fooImpl(typename value<derived>::type t) {
+	typedef double value_type;
+
+	void fooImpl(typename value<double>::type t) {
 		std::cout << t << std::endl;
 	}
 };

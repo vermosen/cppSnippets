@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{C7E0A514-DFC2-40D5-AD0C-070F7FF9F9BF}</ProjectGuid>
-    <RootNamespace>crtptraitsinstanciation</RootNamespace>
+    <ProjectGuid>{5DBA9344-31B4-4FB2-BDE1-F8B6C0D7B860}</ProjectGuid>
+    <RootNamespace>checkClassMethod2</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -116,13 +116,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="base.h" />
-    <ClInclude Include="derived.h" />
-    <ClInclude Include="derived_fwd.h" />
-    <ClInclude Include="trait.h" />
-    <ClInclude Include="trait_fwd.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

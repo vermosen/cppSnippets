@@ -2,9 +2,9 @@
 
 #include "trait_fwd.h"
 
-struct derived;
+template <typename> struct derived;
 
 template <>
-struct value<derived> {
-	typedef double type;
+struct value<derived<double>> {
+	typedef typename double type;
 };

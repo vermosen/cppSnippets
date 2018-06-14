@@ -3,7 +3,7 @@
 
 int main() {
 
-	derived d;
+	derived<double> d;
 	d.foo(3.0);
 
 	return 0;
