@@ -1,3 +1,8 @@
+#ifndef NDEBUG
+#define BOOST_MULTI_INDEX_ENABLE_INVARIANT_CHECKING
+#define BOOST_MULTI_INDEX_ENABLE_SAFE_MODE
+#endif
+
 #include <string>
 #include <iostream>
 #include <map>
@@ -61,18 +66,18 @@ typedef typename std::map<int, std::map<int, int> > standard_set;
 
 int main()
 {
+	const std::size_t n = 5000;
 	boost_set bs;
 	standard_set ss;
-	int k = 0; int l = 0; 
+	int k, l;
 
-	// step 1 - insert
-
+	// step 1 - insert stl
+	k = 0; l = 0;
 	point_type start = clock_type::now();
-	// insertion stl
-	for (int i = 0; i < 5000; i++) {
-		auto it = ss.insert(std::make_pair(i, std::map<int, int>()));
-		for (int j = 0; j < 5000; j++) {
-			it.first->second.insert(std::make_pair(j, l++));
+	for (int i = 0; i < n; i++) {
+		auto it = ss.emplace(i, std::map<int, int>());
+		for (int j = 0; j < n; j++) {
+			it.first->second.emplace(j, l++);
 		}
 	}
 	elapsed("stl insertion", start);
@@ -80,17 +85,18 @@ int main()
 	// insertion boost
 	k = 0; l = 0;
 	start = clock_type::now();
-	for (int i = 0; i < 5000; i++) {
-		for (int j = 0; j < 5000; j++) {
-			bs.insert(instrument(l++, i, k++));
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			bs.emplace(j, i, k++);
 		}
+		
 	}
 	elapsed("boost insertion", start);
 
 	// step 2 - lookup
 	int ttt = 0;
 	start = clock_type::now();
-	for (int i = 0; i < 5000; i++) {
+	for (int i = 0; i < n; i++) {
 		ttt += ss[i][i];
 	}
 	
@@ -100,7 +106,7 @@ int main()
 	ttt = 0;
 	start = clock_type::now();
 	auto& index = bs.get<tags::composite>();
-	for (int i = 0; i < 5000; i++) {
+	for (int i = 0; i < n; i++) {
 		boost_set::iterator it = index.find(std::make_tuple(i, i));
 		ttt += it->lid;
 	}
