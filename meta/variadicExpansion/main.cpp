@@ -4,31 +4,23 @@ struct A {};
 struct B {};
 struct C {};
 
-enum class type {
-
-	  A = 1
-	, B = 2
-	, C = 3
-};
-
-template<typename A>
+template<typename Caller, typename A>
 struct checker;
 
-template<>
-struct checker<A> {
-	inline static void impl() { std::cout << "a"; }
+template<typename Caller>
+struct checker<Caller, A> {
+	inline static void impl(Caller& c) { std::cout << "a"; }
 };
 
-template<>
-struct checker<B> {
-	inline static void impl() { std::cout << "b"; }
+template<typename Caller>
+struct checker<Caller, B> {
+	inline static void impl(Caller& c) { std::cout << "b"; }
 };
 
-template<>
-struct checker<C> {
-	inline static void impl() { std::cout << "c"; }
+template<typename Caller>
+struct checker<Caller, C> {
+	inline static void impl(Caller& c) { std::cout << "c"; }
 };
-
 
 template <class First, class ... Rest>
 struct expanse;
@@ -44,7 +36,7 @@ struct interface : public expanse<First, Rest...> {
 
 	template<typename T>
 	void checkOne() { 
-		checker<T>::impl(); 
+		checker<expanse<First, Rest...>, T>::impl(*this);
 		std::cout << std::endl;
 	}
 };
@@ -55,7 +47,7 @@ struct expanse : public expanse<Rest...> {
 	using  base = expanse<Rest...>;
 
 	inline void checkAll() {
-		checker<First>::impl();
+		checker<expanse<First, Rest...>, First>::impl(*this);
 		std::cout << " ";
 		base::checkAll();
 	}
@@ -65,7 +57,7 @@ template <class First>
 struct expanse<First> {
 
 	inline void checkAll() { 
-		checker<First>::impl();
+		checker<expanse<First>, First>::impl(*this);
 		std::cout << "!" << std::endl;
 	}
 };
