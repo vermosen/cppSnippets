@@ -1,39 +1,54 @@
 #include <iostream>
 
+template <class Impl, class Base = void>
+class curiouslyRecurring {
+protected:
+	curiouslyRecurring() {}
+	virtual ~curiouslyRecurring() {}
+
+	inline Impl& impl() {
+		return static_cast<Impl&>(*this);
+	}
+
+	inline const Impl& impl() const {
+		return static_cast<const Impl&>(*this);
+	}
+};
+
 template <typename T>
-class parent
-{ 
+class parent : public curiouslyRecurring<T>
+{
 public:
     void interface()
     {
-		std::cout << "parent : ";
-        static_cast<T*>(this)->interfaceImpl();
+		std::cout << "parent" << std::endl;
+		this->curiouslyRecurring<T>::impl().interfaceImpl();
     }
 };
 
-class child1 : public parent<child1> 
+template <typename T>
+class mezzo : public parent<mezzo<T>>, public curiouslyRecurring<T>
 {
 	friend parent;
     void interfaceImpl()
     {
-        std::cout << "implementation 1" << std::endl;
+        std::cout << "mezzo" << std::endl;
+		this->curiouslyRecurring<T>::impl().interfaceImpl();
     }
 };
 
-class child2 : public parent<child2>
+class child : public mezzo<child>
 {
-	friend parent;
+	friend mezzo<child>;
 	void interfaceImpl()
 	{
-		std::cout << "implementation 2" << std::endl;
+		std::cout << "child" << std::endl;
 	}
 };
 
 int main()
 {
-	child1 c1;
+	child c1;
     c1.interface();  // Prints "Derived implementation"
-	child2 c2;
-	c2.interface();  // Prints "Derived implementation"
     return 0;
 }
