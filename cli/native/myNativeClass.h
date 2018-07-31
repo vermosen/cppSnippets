@@ -13,5 +13,3 @@ namespace ns {
 		inline void doub(double v) { m_double = v; }
 	};
 }
-
-

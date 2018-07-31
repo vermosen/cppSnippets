@@ -2,6 +2,10 @@
 #include <string>
 #include <iostream>
 
+namespace test {
+
+
+}
 #define TEST_IMPL(STR)															\
 	template<typename, typename T>												\
 	struct has_##STR{															\
