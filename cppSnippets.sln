@@ -300,6 +300,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "customadapter1", "boost\fus
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "customadapter3", "boost\fusion\customadapter3\customadapter3.vcxproj", "{1DAD94F7-4B8D-439F-9501-46964EE08258}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transform", "boost\fusion\transform\transform.vcxproj", "{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (intel)|Any CPU = Debug (intel)|Any CPU
@@ -3056,6 +3058,28 @@ Global
 		{1DAD94F7-4B8D-439F-9501-46964EE08258}.Release|x64.Build.0 = Release|x64
 		{1DAD94F7-4B8D-439F-9501-46964EE08258}.Release|x86.ActiveCfg = Release|Win32
 		{1DAD94F7-4B8D-439F-9501-46964EE08258}.Release|x86.Build.0 = Release|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug (intel)|Any CPU.ActiveCfg = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug (intel)|Any CPU.Build.0 = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug (intel)|x64.ActiveCfg = Debug|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug (intel)|x64.Build.0 = Debug|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug (intel)|x86.ActiveCfg = Debug|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug (intel)|x86.Build.0 = Debug|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug|x64.ActiveCfg = Debug|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug|x64.Build.0 = Debug|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug|x86.ActiveCfg = Debug|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Debug|x86.Build.0 = Debug|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release AVX|Any CPU.ActiveCfg = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release AVX|Any CPU.Build.0 = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release AVX|x64.ActiveCfg = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release AVX|x64.Build.0 = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release AVX|x86.ActiveCfg = Release|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release AVX|x86.Build.0 = Release|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release|Any CPU.ActiveCfg = Release|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release|x64.ActiveCfg = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release|x64.Build.0 = Release|x64
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release|x86.ActiveCfg = Release|Win32
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3179,6 +3203,7 @@ Global
 		{49B792A9-D8D0-4BF9-9D08-57A236CBE2A7} = {E88F341E-20BC-4C90-84AF-EFC5335B52BC}
 		{C151B523-B512-40F9-9657-BFDECC697BC7} = {E88F341E-20BC-4C90-84AF-EFC5335B52BC}
 		{1DAD94F7-4B8D-439F-9501-46964EE08258} = {E88F341E-20BC-4C90-84AF-EFC5335B52BC}
+		{AD97092F-61C2-4BF4-98E6-AE2BE66C7732} = {E88F341E-20BC-4C90-84AF-EFC5335B52BC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3209FB23-0ABF-4078-A7B6-62BD86BED932}
