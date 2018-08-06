@@ -9,12 +9,15 @@ struct test {
     std::int64_t m_t;
 };
 
+#ifndef USE_MACRO
+//#define USE_MACRO
+#endif
+
+#ifdef USE_MACRO
 BOOST_FUSION_ADAPT_STRUCT(test,
     (std::int64_t, m_t)
 )
-
-/*
-generate this guy
+#else
 
 namespace boost {
 namespace fusion {
@@ -82,7 +85,7 @@ namespace mpl {
     };
 }}
 
-*/
+#endif
 
 int main() {
 
