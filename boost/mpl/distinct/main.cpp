@@ -51,26 +51,37 @@ namespace pl = boost::mpl::placeholders;
 
 template <typename ... Args>
 struct folder {
-
 public:
     typedef typename boost::mpl::fold<
-          typename boost::mpl::vector<Args...>::type
+        typename boost::mpl::vector<Args...>::type
         , boost::mpl::set0<>
         , boost::mpl::insert<pl::_1, pl::_2>
     >::type type;
 };
 
-template <typename ... Args>
+template <template <class> class F, typename ... Args>
 struct aggregator {
-    typedef typename folder<typename trait<Args>::type...>::type type;
+private:
+    template <typename ... Args>
+    struct folder {
+    public:
+        typedef typename boost::mpl::fold<
+            typename boost::mpl::vector<Args...>::type
+            , boost::mpl::set0<>
+            , boost::mpl::insert<pl::_1, pl::_2>
+        >::type type;
+    };
+
+public:
+    typedef typename folder<typename F<Args>::type...>::type type;
 };
 
 int main() {
 
     // create a boost::mpl::set of the desired types
-    typedef aggregator<a, b, c, d, e>::type res;
+    typedef aggregator<trait, a, b, c, d, e>::type res;
 
     // output the type
-    res::foo;
+    res a;
     return EXIT_SUCCESS;
 }

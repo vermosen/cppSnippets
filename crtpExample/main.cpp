@@ -22,7 +22,7 @@ public:
     void interface()
     {
 		std::cout << "parent" << std::endl;
-		this->curiouslyRecurring<T>::impl().interfaceImpl();
+		curiouslyRecurring<T>::impl().interfaceImpl();
     }
 };
 
@@ -33,7 +33,7 @@ class mezzo : public parent<mezzo<T>>, public curiouslyRecurring<T>
     void interfaceImpl()
     {
         std::cout << "mezzo" << std::endl;
-		this->curiouslyRecurring<T>::impl().interfaceImpl();
+		curiouslyRecurring<T>::impl().interfaceImpl();
     }
 };
 
