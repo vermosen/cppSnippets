@@ -4,39 +4,31 @@
 #include <chrono>
 
 class message {
-	
-	public: 
-
-		class visitor { 
-
-			public: 
-				virtual ~visitor() = default; 
+	public:
+		class visitor {
+			public:
+				virtual ~visitor() = default;
 				virtual bool accept(message *) { return false; }
-		
+
 		};
 
 		virtual ~message() = default;
 		virtual bool accept(visitor &) = 0;						// pure virtual
-
 };
 
-template < typename T> 
+template < typename T>
 class child : public T {
-	
-	public: 
 
-		class visitor { 
-		
+	public:
+		class visitor {
 			public:
-				virtual ~visitor() = default; 
+				virtual ~visitor() = default;
 				virtual bool accept(child*) = 0;
 		};
 
 		virtual bool accept(message::visitor & av) override {
-
 			auto dv = dynamic_cast< child::visitor*>(std::addressof(av));
 			return dv ? dv->accept(this) : av.accept(this);
-
 	}
 };
 
@@ -50,37 +42,28 @@ class message_F : public child < message_D > {};
 // a first visitor implementation designed for counting messages
 template < typename T >
 class counting_visitor : public message::visitor {
-
-	public: 
-
+	public:
 		virtual bool accept(message* p) { return dynamic_cast< T* >(p) ? ++cnt : false; }
 		operator int() const { return cnt; }
-	
-	private: 
 
+	private:
 		int cnt = 0;
-
 };
 
 // a second visitor implementation for buffering stuff
-template < typename T > 
+template < typename T >
 class buffer : public message::visitor {
-
 	public:
-
 		virtual bool accept(message* p) {
-
 			if (T * ptr = dynamic_cast<T*>(p)){
-				
 				// call some method here
-				someMethod(ptr);				
+				someMethod(ptr);
 				return true;
 
-			} else 
+			} else
 				return false;
-	
 		}
-	
+
 		std::vector<T*> & messages(){ return vec_; }
 
 	protected:
@@ -113,16 +96,16 @@ int main() {
 				<< std::endl;
 
 	for (auto i = 0; i < 10000; i += 5){							// fill the array
-	
+
 		seq[i]     = new message_B;
 		seq[i + 1] = new message_C;
 		seq[i + 2] = new message_D;
 		seq[i + 3] = new message_E;
 		seq[i + 4] = new message_F;
-	
+
 	}
-	
-	bufferB buffer_B;												// instanciate the buffers 
+
+	bufferB buffer_B;												// instanciate the buffers
 	bufferC buffer_C;
 	bufferD buffer_D;
 
@@ -130,11 +113,9 @@ int main() {
 		std::chrono::system_clock::now();
 
 	for (message * p : seq) {										// each buffer attempt to store the message
-	
-		p->accept(buffer_B); 
-		p->accept(buffer_C); 
-		p->accept(buffer_D); 
-	
+		p->accept(buffer_B);
+		p->accept(buffer_C);
+		p->accept(buffer_D);
 	}
 
 	std::vector<message_B*> bs = buffer_B.messages();				// the resulting messages by type

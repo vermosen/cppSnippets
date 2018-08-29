@@ -4,15 +4,15 @@
 #include <chrono>
 
 class message {													// base class
-	
-	public: 
 
-		class visitor { 
+	public:
 
-			public: 
-				virtual ~visitor() = default; 
+		class visitor {
+
+			public:
+				virtual ~visitor() = default;
 				virtual bool accept(message *) { return false; }
-		
+
 		};
 
 		virtual ~message() = default;
@@ -22,25 +22,24 @@ class message {													// base class
 
 template < typename T>											// first basic child
 class child : public T {
-	
-	public: 
 
-		class visitor { 
-		
+	public:
+
+		class visitor {
+
 			public:
-				virtual ~visitor() = default; 
+				virtual ~visitor() = default;
 				virtual bool accept(child*) = 0;
 		};
 
-		virtual bool accept(message::visitor & av) override {
-
-			auto dv = dynamic_cast< child::visitor*>(std::addressof(av));
+		virtual bool accept(message::visitor& av) override {
+			auto dv = dynamic_cast<child::visitor*>(std::addressof(av));
 			return dv ? dv->accept(this) : av.accept(this);
 
 	}
 };
 
-template < typename T>									
+template < typename T>
 class childWithCtor : public T {								// second implementation with extended ctor
 
 public:
@@ -49,7 +48,7 @@ public:
 	childWithCtor(int arg) : arg_(arg) {};
 
 protected:
-	
+
 	int arg_;
 
 public:
@@ -79,7 +78,7 @@ class message_B : public childWithCtor < message > {
 };
 
 // buffer
-template < typename T > 
+template < typename T >
 class buffer : public message::visitor {
 
 	public:
@@ -87,16 +86,16 @@ class buffer : public message::visitor {
 		virtual bool accept(message* p) {
 
 			if (T * ptr = dynamic_cast<T*>(p)){
-				
+
 				// call some method here
-				someMethod(ptr);				
+				someMethod(ptr);
 				return true;
 
-			} else 
+			} else
 				return false;
-	
+
 		}
-	
+
 		std::vector<T*> & messages(){ return vec_; }
 
 	protected:
@@ -126,23 +125,23 @@ int main() {
 				<< std::endl;
 
 	for (auto i = 0; i < 10000; i += 2){							// fill the array
-	
+
 		seq[i] = new message_A;
 		seq[i + 1] = new message_B(i);									// use the extended ctor
-	
+
 	}
-	
-	bufferA buffer_A;												// instanciate the buffers 
+
+	bufferA buffer_A;												// instanciate the buffers
 	bufferB buffer_B;
-	
+
 	std::chrono::time_point<std::chrono::system_clock> testStart =	// start the real test
 		std::chrono::system_clock::now();
 
 	for (message * p : seq) {										// each buffer attempt to store the message
-	
+
 		p->accept(buffer_A);
-		p->accept(buffer_B); 
-		
+		p->accept(buffer_B);
+
 	}
 
 	std::vector<message_A*> as = buffer_A.messages();				// the resulting messages by type
