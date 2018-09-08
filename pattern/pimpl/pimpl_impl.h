@@ -22,7 +22,7 @@ namespace Foo {
 	pimpl<T, Del>::pimpl(Q* ptr)
 		: m_impl(std::unique_ptr<T, Del>(ptr)) {
 
-		// does not evaluate in MSVC (but the error is correct)
+		// does not evaluate in MSVC (but the error raised is correct)
 		static_assert(std::is_base_of<T, Q>::value, "incompatible type passed");
 	}
 
