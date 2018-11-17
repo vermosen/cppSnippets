@@ -1,8 +1,9 @@
 
 #define CAT(X, Y) X Y
 
-#define NASM_COMMENT(X)  \
-    __asm__(CAT(";", #X));
+#ifndef _MSC_VER
+#define NASM_COMMENT(X) __asm__(CAT(";", #X));
+#endif
 
 #define NASM_CPP(X) \
     NASM_COMMENT(X) \
