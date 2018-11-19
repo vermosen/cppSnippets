@@ -22,25 +22,18 @@ public:
     void interface()
     {
 		std::cout << "parent" << std::endl;
-		curiouslyRecurring<T>::impl().interfaceImpl();
+		curiouslyRecurring<T>::impl().interface();
     }
 };
 
-template <typename T>
-class mezzo : public parent<mezzo<T>>, public curiouslyRecurring<T>
+class child : public parent<child>
 {
-	friend parent;
-    void interfaceImpl()
-    {
-        std::cout << "mezzo" << std::endl;
-		curiouslyRecurring<T>::impl().interfaceImpl();
-    }
-};
+public:
+    using parent::interface;
 
-class child : public mezzo<child>
-{
-	friend mezzo<child>;
-	void interfaceImpl()
+    friend parent<child>;
+protected:
+	void interface()
 	{
 		std::cout << "child" << std::endl;
 	}
@@ -48,7 +41,7 @@ class child : public mezzo<child>
 
 int main()
 {
-	child c1;
-    c1.interface();  // Prints "Derived implementation"
+    parent<child>& c1  = child();
+    c1.interface();
     return 0;
 }
