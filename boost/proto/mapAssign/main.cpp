@@ -1,11 +1,3 @@
-//  Copyright 2008 Eric Niebler. Distributed under the Boost
-//  Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-// This is a port of map_list_of() from the Boost.Assign library.
-// It has the advantage of being more efficient at runtime by not
-// building any temporary container that requires dynamic allocation.
-
 #include <map>
 #include <string>
 #include <iostream>
@@ -76,9 +68,14 @@ struct map_list_of_dom
 template<typename Expr>
 struct map_list_of_expr {
 	BOOST_PROTO_BASIC_EXTENDS(Expr, map_list_of_expr, map_list_of_dom)
-		BOOST_PROTO_EXTENDS_FUNCTION()
+	BOOST_PROTO_EXTENDS_FUNCTION()
 
-		template<typename Key, typename Value, typename Cmp, typename Al>
+	template<
+          typename Key
+        , typename Value
+        , typename Cmp
+        , typename Al
+    >
 	operator std::map<Key, Value, Cmp, Al>() const {
 		BOOST_MPL_ASSERT((proto::matches<Expr, MapListOf>));
 		std::map<Key, Value, Cmp, Al> map;
